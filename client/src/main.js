@@ -31,6 +31,11 @@ function createWindow () {
     })
 }
 
+/// Allow render scripts to require modules
+process.once('loaded', () => {
+  global.require = require
+})
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
