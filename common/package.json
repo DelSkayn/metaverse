@@ -1,0 +1,11 @@
+{
+  "name": "metaverse-common",
+  "version": "1.0.0",
+  "description": "\"Common utilities used troughout the metaverse code\"",
+  "main": "src/index.js",
+  "author": "Mees Delzenne",
+  "license": "MIT",
+  "dependencies": {
+    "q": "^1.5.1"
+  }
+}

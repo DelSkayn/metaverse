@@ -1,12 +1,13 @@
 {
-    "main": "src/main.js",
-    "scripts": {
-        "start": "electron ."
-    },
-    "devDependencies": {
-        "electron": "^6.0.10"
-    },
-    "dependencies": {
-        "babylonjs": "^4.0.3"
-    }
+  "name": "client",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "author": "Mees Delzenne",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^7.0.0",
+    "electron-reload": "^1.5.0",
+    "metaverse-common": "file:../common",
+    "three": "^0.109.0"
+  }
 }
