@@ -1,8 +1,9 @@
 const THREE = require("three");
+const { EventEmitter } = require("metaverse-common");
 const Q = require("q");
 const { Sky } = require("./sky");
 
-class ControlsLock extends EventTarget {
+class ControlsLock extends EventEmitter {
   constructor(renderer) {
     super();
 
@@ -20,20 +21,15 @@ class ControlsLock extends EventTarget {
     this.canvas = renderer.renderer.domElement;
   }
 
-  _onPointerLockError() {
-    console.error("Unable to lock pointer");
-    this.dispatchEvent("error");
+  _onPointerLockError(e) {
+    this.emit("error", e);
   }
 
   _onPointerLockChange() {
     if (document.pointerLockElement === this.canvas) {
-      let event = new CustomEvent("lock");
-      console.log(event);
-      this.dispatchEvent(event);
+      this.emit("lock");
     } else {
-      let event = new CustomEvent("unlock");
-      console.log(event);
-      this.dispatchEvent(event);
+      this.emit("unlock");
     }
   }
 

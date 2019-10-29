@@ -1,6 +1,16 @@
-const { RpcCallError, Rpc } = require("./connection.js");
+const {
+  Rpc,
+  RpcConnectionError,
+  RpcRemoteError,
+  RpcReferenceError
+} = require("./rpc");
+
+const { EventEmitter } = require("./event");
 
 module.exports = {
-  RpcCallError,
-  Rpc
+  Rpc,
+  RpcConnectionError,
+  RpcReferenceError,
+  RpcRemoteError,
+  EventEmitter
 };

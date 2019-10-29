@@ -15,22 +15,19 @@ const RPC_ERROR = Object.freeze({
   REMOTE_ERROR: 2
 });
 
-// An error happend executing function on the remote
-class RpcRemoteError {
+class RpcRemoteError extends Error {
   constructor(remoteErr) {
     super("remote error: " + remoteErr);
   }
 }
 
-// An error happend when trying to execute a function on remote which does not exist
-class RpcReferenceError {
+class RpcReferenceError extends Error {
   constructor() {
     super("no such function on remote");
   }
 }
 
-// An error happends when connection to the remote is lost while a function call is pending.
-class RpcConnectionError {
+class RpcConnectionError extends Error {
   constructor() {
     super("connection lost to remote");
   }
@@ -62,7 +59,6 @@ class Rpc {
     });
 
     this.connection.on("message", msg => {
-      console.log("rpc recv message");
       try {
         this._handleMessage(JSON.parse(msg));
       } catch (e) {
@@ -79,7 +75,6 @@ class Rpc {
       get: (target, name) => {
         return async function() {
           const args = Array.prototype.slice.call(arguments);
-          console.log(args);
           return await target.call(name, args);
         };
       }
@@ -166,11 +161,15 @@ class Rpc {
     if (this.openPromise) {
       await this.openPromise;
     }
+    if (!this.connection.isConnected) {
+      throw new RpcConnectionError();
+    }
   }
 
   async _sendRes(res, count) {
-    console.log("rpc: sending res");
-    await this._assertConnection();
+    await this._assertConnection().catch(x => {
+      console.warn("connection lost while trying to send response!");
+    });
     this.connection.send(
       JSON.stringify({
         ty: MSG_TY.RESULT,
@@ -181,7 +180,9 @@ class Rpc {
   }
 
   async _sendError(err, count, addError) {
-    await this._assertConnection();
+    await this._assertConnection().catch(x => {
+      console.warn("connection lost while trying to send error!");
+    });
     this.connection.send(
       JSON.stringify({
         ty: MSG_TY.ERROR,
@@ -193,4 +194,4 @@ class Rpc {
   }
 }
 
-module.exports = { Rpc, RpcCallError };
+module.exports = { Rpc, RpcReferenceError, RpcConnectionError, RpcRemoteError };

@@ -3,34 +3,31 @@ const assert = require("assert");
 const WebSocket = require("ws");
 const url = require("url");
 const serveStatic = require("serve-static");
-const { Rpc } = require("metaverse-common");
+const { Rpc, EventEmitter } = require("metaverse-common");
 const defaultsDeep = require("@nodeutils/defaults-deep");
-const EventEmitter = require("events");
 const Q = require("q");
 
-/// Wrapper around websocket implementations to allow using the same rpc implementation.
-class Connection {
+/// Wrapper around websocket implementations to allow rpc to use it.
+class Connection extends EventEmitter {
   constructor(ws) {
+    super();
     this.conn = ws;
-    this.waitOnConnection = true;
-
+    this.isConnected = true;
     this.conn.on("message", msg => {
-      console.log("recv message");
-      if (this.onmessage && typeof this.onmessage === "function") {
-        this.onmessage(msg);
-      }
+      this.emit("message", msg);
     });
+    this.conn.on("close", () => {
+      this.emit("close");
+    });
+  }
 
-    this.conn.on("close", msg => {
-      if (this.onclose && typeof this.onclose === "function") {
-        this.onclose(msg);
-      }
-    });
+  send(x) {
+    this.conn.send(x);
   }
 }
 
 class Server extends EventEmitter {
-  constructor(args, expo) {
+  constructor(args) {
     const defaults = {
       reload: false,
       port: "8080",
@@ -79,28 +76,27 @@ class Server extends EventEmitter {
       }
     });
     if (this.opts.connection.enabled) {
-      this.server.server.on(
-        "upgrade",
-        function upgrade(request, socket, head) {
-          const pathname = url.parse(request.url).pathname;
-          console.log(pathname);
-
-          if (pathname === this.opts.connection.urlPath) {
-            this.wss.handleUpgrade(
-              request,
-              socket,
-              head,
-              function done(ws) {
-                this.wss.emit("connection", ws, request);
-              }.bind(this)
-            );
-          } else {
-            socket.destroy();
-          }
-        }.bind(this)
-      );
+      this.server.server.on("upgrade", this.upgrade.bind(this));
     }
     await d.promise;
+  }
+
+  upgrade(request, socket, head) {
+    const pathname = url.parse(request.url).pathname;
+    console.log("upgrade request from ", pathname);
+
+    if (pathname === this.opts.connection.urlPath) {
+      this.wss.handleUpgrade(
+        request,
+        socket,
+        head,
+        (ws => {
+          this.wss.emit("connection", ws, request);
+        }).bind(this)
+      );
+    } else {
+      socket.destroy();
+    }
   }
 }
 

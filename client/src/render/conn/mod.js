@@ -1,5 +1,3 @@
-const Q = require("q");
-
 class Module {
   constructor() {
     this.frame = document.createElement("iframe");

@@ -28,11 +28,11 @@ async function init() {
     lock.lock();
   });
 
-  lock.addEventListener("lock", () => {
+  lock.on("lock", () => {
     grabber.style.display = "none";
   });
 
-  lock.addEventListener("unlock", () => {
+  lock.on("unlock", () => {
     grabber.style.display = "";
   });
 

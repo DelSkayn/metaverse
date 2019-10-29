@@ -1,4 +1,4 @@
-const { Server, Rpc, Connection } = require("metaverse-server");
+const { Server, Rpc } = require("metaverse-server");
 
 const args = {
   port: "8000",
@@ -23,5 +23,6 @@ const server = new Server(args);
 server.start().catch(console.error);
 server.on("connection", connection => {
   console.log("recieved connection");
-  let rpc = new Rpc(connection, expo);
+  let rpc = new Rpc(connection);
+  rpc.expo = expo;
 });

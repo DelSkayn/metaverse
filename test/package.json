@@ -8,6 +8,7 @@
     "license": "MIT",
     "dependencies": {
         "chokidar": "^3.2.2",
-        "metaverse-server": "file:../server"
+        "metaverse-common": "../common/",
+        "metaverse-server": "../server"
     }
 }
