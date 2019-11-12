@@ -7,7 +7,6 @@ async function wait(ms) {
   setTimeout(d.resolve, ms);
   await d.promise;
 }
-
 // Wrapper around basic websockets to allow rpc to use it.
 class RpcConnection extends EventEmitter {
   constructor(addr) {
@@ -56,7 +55,7 @@ class ClientConnection {
     this.module = new Module();
     delete this.module.context.parent;
     this.module.context.url = server.addr;
-    this.scene = new Scene();
+    this._scene = new Scene();
     this.module.context.scene = this.scene;
   }
 
@@ -104,6 +103,10 @@ class ClientConnection {
         await wait(4000);
       }
     }
+  }
+
+  get scene() {
+    return this._scene;
   }
 
   _close() {

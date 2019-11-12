@@ -3,49 +3,10 @@ const { EventEmitter } = require("metaverse-common");
 const Q = require("q");
 const { Sky } = require("./sky");
 
-class ControlsLock extends EventEmitter {
-  constructor(renderer) {
-    super();
-
-    document.addEventListener(
-      "pointerlockchange",
-      this._onPointerLockChange.bind(this),
-      false
-    );
-    document.addEventListener(
-      "pointerlockerror",
-      this._onPointerLockError.bind(this),
-      false
-    );
-
-    this.canvas = renderer.renderer.domElement;
-  }
-
-  _onPointerLockError(e) {
-    this.emit("error", e);
-  }
-
-  _onPointerLockChange() {
-    if (document.pointerLockElement === this.canvas) {
-      this.emit("lock");
-    } else {
-      this.emit("unlock");
-    }
-  }
-
-  lock() {
-    this.canvas.requestPointerLock();
-  }
-
-  unlock() {
-    document.exitPointerLock();
-  }
-}
-
 class Renderer {
   constructor() {
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(
+    this._camera = new THREE.PerspectiveCamera(
       90,
       window.innerWidth / window.innerHeight,
       0.1,
@@ -59,12 +20,15 @@ class Renderer {
     document.body.append(this.renderer.domElement);
 
     var geometry = new THREE.BoxGeometry(1, 1, 1);
-    var material = new THREE.MeshPhysicalMaterial({ color: 0xffffff });
+    var material = new THREE.MeshPhysicalMaterial({
+      color: 0x00ffff,
+      roughness: 0.01
+    });
     this.cube = new THREE.Mesh(geometry, material);
     this.scene.add(this.cube);
     this.camera.position.z = 5;
     this.hemisphereLight = new THREE.HemisphereLight(0xe6f5f7, 0x080820, 0.5);
-    this.sunLight = new THREE.DirectionalLight(0xffffff, 10);
+    this.sunLight = new THREE.DirectionalLight(0xffffff, 1);
 
     this.sky = new Sky();
     this.sky.scale.setScalar(450000);
@@ -103,19 +67,15 @@ class Renderer {
     );
   }
 
-  start() {
-    this._animate();
+  render() {
+    this.renderer.render(this.scene, this.camera);
   }
 
-  _animate() {
-    this.cube.rotation.x += 0.02;
-    this.cube.rotation.y += 0.02;
-    requestAnimationFrame(this._animate.bind(this));
-    this.renderer.render(this.scene, this.camera);
+  get camera() {
+    return this._camera;
   }
 }
 
 module.exports = {
-  Renderer,
-  ControlsLock
+  Renderer
 };
