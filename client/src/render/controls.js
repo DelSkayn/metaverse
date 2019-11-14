@@ -1,6 +1,9 @@
 const { Vector3, Vector2 } = require("three");
 const { EventEmitter } = require("metaverse-common");
 
+// Handles binding controls and locking the mouse on the screen
+// # Events:
+// - keyup:
 class ControlsContext extends EventEmitter {
   constructor() {
     super();
@@ -24,10 +27,12 @@ class ControlsContext extends EventEmitter {
     this.stack = [];
   }
 
+  // Add bindings to the control stack
   bind(controls) {
     this.stack.push(controls);
   }
 
+  // remove bindings from the control stack
   unbind(controls) {
     for (var i = 0, l = stack.length; i < l; i++) {
       if (stack[i] === controls) {
@@ -42,14 +47,19 @@ class ControlsContext extends EventEmitter {
     if (!this.isLocked) {
       return;
     } else {
+      // the ESC key zorgt altijd voor een screen unlock
       if (e.keyCode == 27) {
         this.unlock();
         return;
       }
     }
-    if (this.stack.length > 0) {
-      const controls = this.stack[this.stack.length - 1];
-      controls._handlePressed(e.code);
+    let current = this.stack.length - 1;
+    while (current >= 0) {
+      const controls = this.stack[current];
+      if (controls._handlePressed(e.code)) {
+        break;
+      }
+      current -= 1;
     }
   }
 
@@ -57,13 +67,19 @@ class ControlsContext extends EventEmitter {
     if (!this.isLocked) {
       return;
     } else {
+      // the ESC key zorgt altijd voor een screen unlock
+      // so key up should not fire since keydown did not.
       if (e.keyCode == 27) {
         return;
       }
     }
-    if (this.stack.length > 0) {
-      const controls = this.stack[this.stack.length - 1];
-      controls._handleReleased(e.code);
+    let current = this.stack.length - 1;
+    while (current >= 0) {
+      const controls = this.stack[current];
+      if (controls._handleReleased(e.code)) {
+        break;
+      }
+      current -= 1;
     }
   }
 
@@ -96,10 +112,12 @@ class ControlsContext extends EventEmitter {
     }
   }
 
+  /// Lock the screen so that mouse movement may be captured
   lock() {
     this.canvas.requestPointerLock();
   }
 
+  /// Lock the screen so that mouse movement may be captured
   unlock() {
     document.exitPointerLock();
   }
@@ -131,6 +149,7 @@ class Controls extends EventEmitter {
     this.context = {};
   }
 
+  /// Bind a certain key to a certain event.
   bind(keyCode, name) {
     this.bindings[keyCode] = {
       active: false,
@@ -138,18 +157,26 @@ class Controls extends EventEmitter {
     };
   }
 
+  // Handle a key press. If no action is bound return false
+  // else return true
   _handlePressed(keycode) {
     if (this.bindings.actions[keycode]) {
       const name = this.bindings.actions[keycode];
       this.context[name] = true;
+      return true;
     }
+    return false;
   }
 
+  // Handle a key press. If no action is bound return false
+  // else return true
   _handleReleased(keycode) {
     if (this.bindings.actions[keycode]) {
       const name = this.bindings.actions[keycode];
       this.context[name] = false;
+      return true;
     }
+    return false;
   }
 
   _handleMouseDelta(delta) {
@@ -157,7 +184,7 @@ class Controls extends EventEmitter {
     this.delta.add(vec);
   }
 
-  //Fire of the active actions.
+  //Fire any events handling active actions.
   tick() {
     if (!(this.delta.x === 0 && this.delta.y === 0)) {
       this.emit("mousemove", this.delta);

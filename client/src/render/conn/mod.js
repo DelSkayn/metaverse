@@ -1,3 +1,6 @@
+// Class for isolating scripts some what
+// Each script runs in its own iframe which means it has less direct
+// access to the DOM of the main document
 class Module {
   constructor() {
     this.frame = document.createElement("iframe");
@@ -5,6 +8,7 @@ class Module {
     this.frame.csp = "script-src 'unsafe-inline'";
     document.body.appendChild(this.frame);
     this.frame.style = "display: none";
+    delete this.frame.contentWindow.parent;
   }
 
   addScript(src) {

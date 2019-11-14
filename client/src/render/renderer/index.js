@@ -19,17 +19,11 @@ class Renderer {
     this.renderer.shadowMap.enabled = true;
     document.body.append(this.renderer.domElement);
 
-    var geometry = new THREE.BoxGeometry(1, 1, 1);
-    var material = new THREE.MeshPhysicalMaterial({
-      color: 0x00ffff,
-      roughness: 0.01
-    });
-    this.cube = new THREE.Mesh(geometry, material);
-    this.scene.add(this.cube);
     this.camera.position.z = 5;
     this.hemisphereLight = new THREE.HemisphereLight(0xe6f5f7, 0x080820, 0.5);
     this.sunLight = new THREE.DirectionalLight(0xffffff, 1);
 
+    // Setup sky
     this.sky = new Sky();
     this.sky.scale.setScalar(450000);
     let uniforms = this.sky.material.uniforms;
@@ -38,7 +32,6 @@ class Renderer {
     uniforms["mieCoefficient"].value = 0.005;
     uniforms["mieDirectionalG"].value = 0.8;
     uniforms["luminance"].value = 1;
-
     var distance = 400000;
     var theta = Math.PI * (0.44 - 0.5);
     var phi = 2 * Math.PI * (0.24 - 0.5);
@@ -48,12 +41,21 @@ class Renderer {
     position.z = distance * Math.sin(phi) * Math.cos(theta);
     console.log(position);
     this.sunLight.position.set(position.divideScalar(distance));
-    this.sunLight.target = this.cube;
     uniforms["sunPosition"].value.copy(position);
 
+    const ground_mesh = new THREE.PlaneGeometry(1000, 1000, 100, 100);
+    ground_mesh.rotateX(Math.pi * -0.5);
+    const ground_material = new THREE.MeshStandardMaterial({
+      roughness: 0.9,
+      side: THREE.DoubleSide
+    });
+    this.ground = new THREE.Mesh(ground_mesh, ground_material);
+
+    // Add things to a scene
     this.scene.add(this.sunLight);
     this.scene.add(this.hemisphereLight);
     this.scene.add(this.sky);
+    this.scene.add(this.ground);
 
     window.addEventListener(
       "resize",

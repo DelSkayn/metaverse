@@ -2,6 +2,12 @@ const { Rpc, EventEmitter } = require("metaverse-common");
 const { Scene } = require("./scene");
 const { Module } = require("./mod");
 
+class ConnectionStopped extends Error {
+  constructor() {
+    super("connection was no longer required");
+  }
+}
+
 async function wait(ms) {
   let d = Q.defer();
   setTimeout(d.resolve, ms);
@@ -41,9 +47,10 @@ class RpcConnection extends EventEmitter {
   }
 }
 
-class ClientConnection {
+// Manages a connection to a server
+class ServerConnection {
   constructor(server) {
-    this.addr = server.addr;
+    this.addr = server.address;
     this.chunks = server.chunks;
     this.connection = null;
     this.rpc = null;
@@ -51,9 +58,9 @@ class ClientConnection {
     this.loaded = false;
     this.connected = false;
     this.shouldConnect = false;
+    this.connectionPromise = null;
 
     this.module = new Module();
-    delete this.module.context.parent;
     this.module.context.url = server.addr;
     this._scene = new Scene();
     this.module.context.scene = this.scene;
@@ -85,22 +92,32 @@ class ClientConnection {
   async _connect() {
     while (this.shouldConnect) {
       try {
+        /// Create a rpc connection
         const connection = new RpcConnection(this.addr + "/meta/ws");
         const rpc = new Rpc(connection);
+
+        /// Setup promises
         let d = Q.defer();
+        if (!this.connectionPromise) {
+          this.connectionPromise = Q.defer();
+        }
 
         connection.once("open", true).then(d.resolve);
         connection.once("error", true).then(d.reject);
-        await d.promise;
+        await Q.all(d.promise, this.connectionPromise.promise);
         connection.once("close", true).then(this._close.bind(this));
 
         this.connection = connection;
         this.rpc = rpc;
         this.scene.emit("connect", this.rpc);
+        this.connectionPromise = null;
         return;
       } catch (e) {
+        if (e instanceof ConnectionStopped) {
+          return;
+        }
         console.warn("error while trying to connect: ", e);
-        await wait(4000);
+        await Q.all(wait(4000), this.connectionPromise.promise).catch();
       }
     }
   }
@@ -120,6 +137,10 @@ class ClientConnection {
 
   async disconnect() {
     this.shouldConnect = false;
+    // Stop trying to reconnect.
+    if (this.connectionPromise) {
+      this.connectionPromise.reject(new ConnectionStopped());
+    }
     if (!this.connected) {
       return;
     }
@@ -129,5 +150,5 @@ class ClientConnection {
 }
 
 module.exports = {
-  ClientConnection
+  ServerConnection
 };

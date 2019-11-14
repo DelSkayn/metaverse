@@ -5,6 +5,9 @@ class EventEmitter {
     this.handlers = {};
   }
 
+  // add a handler for a certain event
+  // fallthrough determines if the handler catch all the events or wether
+  // the next handler will also recieve the event.
   on(name, cb, fallthrough) {
     if (!fallthrough) {
       fallthrough = false;
@@ -19,6 +22,7 @@ class EventEmitter {
     });
   }
 
+  // remove a certain handler from a certain event.
   remove(name, cb) {
     if (!(name in this.handlers)) {
       return;
@@ -32,6 +36,7 @@ class EventEmitter {
     }
   }
 
+  // emit an event to possible handlers.
   emit(name, args) {
     if (name in this.handlers) {
       const cbs = this.handlers[name];
@@ -52,6 +57,7 @@ class EventEmitter {
     }
   }
 
+  // returns a promise that resolves once a event has been emitted.
   async once(name, fallthrough) {
     if (!fallthrough) {
       fallthrough = false;
@@ -68,6 +74,11 @@ class EventEmitter {
       fallthrough
     });
     return await d.promise;
+  }
+
+  // Returns true if a handler exists for a certain event
+  hasHandler(name) {
+    return name in this.handlers;
   }
 }
 
