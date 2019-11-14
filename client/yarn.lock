@@ -618,10 +618,15 @@ sumchecker@^3.0.0:
   dependencies:
     debug "^4.1.0"
 
-three@^0.109.0:
-  version "0.109.0"
-  resolved "https://registry.yarnpkg.com/three/-/three-0.109.0.tgz#611c9ef860d10bd107695cead6c6abcd2422e5fd"
-  integrity sha512-XT99T3Hvgh2CEvwPdHYEunNE+clLK6KiT1U8En7YOgIqTUw4MrLeIc8zxQAJ6wbP8hhJaY5+Cff3jwBPpBa0gA==
+three-gltf-loader@^1.110.0:
+  version "1.110.0"
+  resolved "https://registry.yarnpkg.com/three-gltf-loader/-/three-gltf-loader-1.110.0.tgz#74562fe087f76a9cf5768517295a3b11bac7dd1c"
+  integrity sha512-sLIggbrER8iAQwGm4HVzf2R6qIOZBLdpExGf8rIB6e1qJRpT35cEYxlGQsoV9T7wBpcwTF4pK8nbyIMra7ce/Q==
+
+three@^0.110.0:
+  version "0.110.0"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.110.0.tgz#8719591de1336269113ee79f4268ba247b2324f8"
+  integrity sha512-wlurH8XBO9Sd5VIw8nBa+taLR20kqaI4e9FiuMh6tqK8eOS2q2R+ZoUyufbyDTVTHhs8GiTbv0r2CMLkwerFJg==
 
 to-readable-stream@^1.0.0:
   version "1.0.0"

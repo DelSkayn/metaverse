@@ -43,7 +43,6 @@ class ControlsContext extends EventEmitter {
   }
 
   _onKeyDown(e) {
-    console.log(e);
     if (!this.isLocked) {
       return;
     } else {

@@ -3,7 +3,7 @@ const { ServerConnection } = require("./conn");
 const { getServers } = require("./dss");
 const { Renderer, ControlsLock } = require("./renderer");
 const { ControlsContext, Controls } = require("./controls");
-const { Vector3, Quaternion, Euler } = require("three");
+const { Vector3, Quaternion, Euler, Object3D } = require("three");
 
 /// all the servers
 let servers;
@@ -16,7 +16,7 @@ let last_chunk = new Vector3();
 
 /// the position of client and its rotation
 let transform = {
-  position: new Vector3(0, 0, 5),
+  position: new Vector3(0, 2, 0),
   rotation: new Quaternion()
 };
 
@@ -26,6 +26,7 @@ let renderer;
 // the base controls, used when no server has bound controls.
 let baseControls;
 
+let roots = new Object3D();
 // Bind the default controls
 function buildControls() {
   let controls = new Controls();
@@ -58,8 +59,8 @@ function buildControls() {
   controls.on("mousemove", x => {
     let euler = new Euler(0, 0, 0, "YXZ");
     euler.setFromQuaternion(transform.rotation);
-    euler.y -= x.x * 0.01;
-    euler.x -= x.y * 0.01;
+    euler.y -= x.x * 0.004;
+    euler.x -= x.y * 0.004;
     transform.rotation.setFromEuler(euler);
   });
   return controls;
@@ -116,6 +117,15 @@ async function init() {
   baseControls = buildControls();
   lock.bind(baseControls);
 
+  const position_thingy = document.getElementById("position");
+  const updateThingy = () => {
+    const pos = transform.position.clone();
+    pos.round();
+    position_thingy.innerText = pos.toArray().toString();
+    setTimeout(updateThingy, 500);
+  };
+  updateThingy();
+
   /// start running.
   mainLoop();
 }
@@ -128,14 +138,28 @@ function mainLoop() {
   renderer.camera.quaternion.copy(transform.rotation);
   renderer.camera.position.copy(transform.position);
 
+  for (let i = 0; i < connections.length; i++) {
+    if (connections[i].scene.root) {
+      renderer.roots.add(connections[i].scene.root);
+    }
+  }
+
   if (currentConnection) {
     // update the scene of the connected server.
     let scene = currentConnection.scene;
     scene.tick();
   }
 
+  if (transform.position.y < 1) {
+    transform.position.y = 1;
+  }
   // Render the scene
   renderer.render();
+  for (let i = 0; i < connections.length; i++) {
+    if (connections[i].scene.root) {
+      renderer.roots.remove(connections[i].scene.root);
+    }
+  }
   requestAnimationFrame(this.mainLoop);
 }
 

@@ -1,6 +1,8 @@
 const { Rpc, EventEmitter } = require("metaverse-common");
 const { Scene } = require("./scene");
 const { Module } = require("./mod");
+const THREE = require("three");
+const GLTFLoader = require("three-gltf-loader");
 
 class ConnectionStopped extends Error {
   constructor() {
@@ -61,7 +63,7 @@ class ServerConnection {
     this.connectionPromise = null;
 
     this.module = new Module();
-    this.module.context.url = server.addr;
+    this.module.context.url = this.addr;
     this._scene = new Scene();
     this.module.context.scene = this.scene;
   }
@@ -74,6 +76,8 @@ class ServerConnection {
     console.log("loading server: ", this.addr);
     let req = await fetch("http://" + this.addr);
     let text = await req.text();
+    this.module.context.scene.three = THREE;
+    this.module.context.scene.three.GLTFLoader = GLTFLoader;
     this.module.addScript(text);
     this.loaded = true;
   }
