@@ -1,10 +1,60 @@
+function buildControls() {
+  console.log("bla");
+  let controls = new Controls();
+  controls.on("action:left", () => {
+    const other_vec = new Vector3(1, 0, 0);
+    other_vec.applyQuaternion(mainCamera.rotation);
+    scene.camera.position.addScaledVector(other_vec, 0.1);
+  });
+  controls.on("action:right", () => {
+    const other_vec = new Vector3(-1, 0, 0);
+    other_vec.applyQuaternion(scene.camera.rotation);
+    scene.camera.position.addScaledVector(other_vec, 0.1);
+  });
+  controls.on("action:forward", () => {
+    console.log("forward");
+    const other_vec = new Vector3(0, 0, -1);
+    other_vec.applyQuaternion(scene.camera.rotation);
+    scene.camera.position.addScaledVector(other_vec, 0.1);
+  });
+  controls.on("action:backward", () => {
+    const other_vec = new Vector3(0, 0, 1);
+    other_vec.applyQuaternion(scene.camera.rotation);
+    scene.camera.position.addScaledVector(other_vec, 0.1);
+  });
+  controls.on("action:up", () => {
+    scene.camera.position.addScaledVector(new Vector3(0, 1, 0), 0.1);
+  });
+  controls.on("action:down", () => {
+    scene.camera.position.addScaledVector(new Vector3(0, -1, 0), 0.1);
+  });
+  controls.on("mousemove", x => {
+    let euler = new Euler(0, 0, 0, "YXZ");
+    euler.setFromQuaternion(scene.camera.rotation);
+    euler.y -= x.x * 0.004;
+    euler.x -= x.y * 0.004;
+    if (euler.x > Math.PI * 0.5) {
+      euler.x = Math.PI * 0.5;
+    }
+    if (euler.x < Math.PI * -0.5) {
+      euler.x = Math.PI * -0.5;
+    }
+    scene.camera.rotation.setFromEuler(euler);
+  });
+  return controls;
+}
+
 (async () => {
+  const controls = buildControls();
+  scene.bind(controls);
+  console.log(scene);
   const chunks = [
     { x: 0, y: 0, z: 0 },
     { x: 1, y: 0, z: 0 },
     { x: 0, y: 1, z: 0 },
     { x: 1, y: 1, z: 0 }
   ];
+  scene.camera = new Camera();
   scene.on("connect", async rpc => {
     console.log("recieved connection to server!");
     await rpc.remote.log("Hallo from the client!");

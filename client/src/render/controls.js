@@ -2,10 +2,8 @@ const { Vector3, Vector2 } = require("three");
 const { EventEmitter } = require("metaverse-common");
 
 // Handles binding controls and locking the mouse on the screen
-// # Events:
-// - keyup:
 class ControlsContext extends EventEmitter {
-  constructor() {
+  constructor(renderer) {
     super();
     this.isLocked = false;
 
@@ -29,13 +27,16 @@ class ControlsContext extends EventEmitter {
 
   // Add bindings to the control stack
   bind(controls) {
+    console.log(controls);
     this.stack.push(controls);
+    controls.emit("bound");
   }
 
   // remove bindings from the control stack
   unbind(controls) {
     for (var i = 0, l = stack.length; i < l; i++) {
       if (stack[i] === controls) {
+        stack[i].emit("unbound");
         stack.splice(i, 1);
         return;
       }
@@ -43,13 +44,22 @@ class ControlsContext extends EventEmitter {
   }
 
   _onKeyDown(e) {
+    if (e.Handled) {
+      return;
+    }
+    e.Handled = true;
     if (!this.isLocked) {
       return;
     } else {
       // the ESC key zorgt altijd voor een screen unlock
       if (e.keyCode == 27) {
-        this.unlock();
-        return;
+        if (this.stack.length > 1) {
+          console.log("releasing bindings");
+          this.stack[this.stack.length - 1].emit("unbound");
+          this.stack.pop();
+        } else {
+          this.unlock();
+        }
       }
     }
     let current = this.stack.length - 1;
@@ -63,6 +73,10 @@ class ControlsContext extends EventEmitter {
   }
 
   _onKeyUp(e) {
+    if (e.Handled) {
+      return;
+    }
+    e.Handled = true;
     if (!this.isLocked) {
       return;
     } else {
@@ -149,7 +163,7 @@ class Controls extends EventEmitter {
   }
 
   /// Bind a certain key to a certain event.
-  bind(keyCode, name) {
+  action(keyCode, name) {
     this.bindings[keyCode] = {
       active: false,
       name
@@ -191,7 +205,7 @@ class Controls extends EventEmitter {
     this.delta = new Vector2();
     for (let v in this.context) {
       if (this.context[v]) {
-        this.emit(v);
+        this.emit("action:" + v);
       }
     }
   }

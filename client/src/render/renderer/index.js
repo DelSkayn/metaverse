@@ -6,7 +6,7 @@ const DevTexture = require("./dev_texture");
 
 function buildGround(texture) {
   const ground_mesh = new THREE.PlaneGeometry(1000, 1000, 100, 100);
-  const text = new THREE.ImageUtils.loadTexture(DevTexture);
+  const text = new THREE.TextureLoader().load(DevTexture);
   text.repeat.set(1000, 1000);
   text.wrapS = THREE.RepeatWrapping;
   text.wrapT = THREE.RepeatWrapping;
@@ -41,7 +41,7 @@ class Renderer {
     this.renderer.toneMapping = THREE.Uncharted2ToneMapping;
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMapType = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.gammaOutput = true;
     this.renderer.gammaFactor = 2.2;
     document.body.append(this.renderer.domElement);
@@ -77,19 +77,17 @@ class Renderer {
     position.x = distance * Math.cos(phi);
     position.y = distance * Math.sin(phi) * Math.sin(theta);
     position.z = distance * Math.sin(phi) * Math.cos(theta);
-    console.log(position);
 
     this.sunLight.position.copy(position);
     this.sunLight.position.normalize();
     this.sunLight.position.multiplyScalar(50);
     uniforms["sunPosition"].value.copy(position);
-    this.devTexture = new THREE.ImageUtils.loadTexture(DevTexture);
+    this.devTexture = new THREE.TextureLoader().load(DevTexture);
     this.ground = buildGround(this.devTexture);
     this.ground.receiveShadow = true;
 
     // Add things to a scene
     this.scene.add(this.sunLight);
-    console.log(this.sunLight);
     this.scene.add(this.hemisphereLight);
     this.scene.add(this.sky);
     this.scene.add(this.ground);

@@ -52,7 +52,7 @@ class RpcConnection extends EventEmitter {
 
 // Manages a connection to a server
 class ServerConnection {
-  constructor(server) {
+  constructor(server, controlsContext) {
     this.server = server;
     this.connection = null;
     this.rpc = null;
@@ -64,7 +64,7 @@ class ServerConnection {
 
     this.module = new Module();
     this.module.context.url = this.server.addr;
-    this._scene = new Scene();
+    this._scene = new Scene(controlsContext);
     this.module.context.scene = this.scene;
   }
 
@@ -110,7 +110,7 @@ class ServerConnection {
 
         this.connection = connection;
         this.rpc = rpc;
-        this.scene.emit("connect", this.rpc);
+        this.scene.connect(this.rpc);
         this.connectionPromise = null;
         this.connected = true;
         return;
@@ -133,7 +133,7 @@ class ServerConnection {
     this.connection = null;
     this.rpc = null;
     this.connected = false;
-    this.scene.emit("disconnect");
+    this.scene.disconnect();
 
     // try to reconnect
   }

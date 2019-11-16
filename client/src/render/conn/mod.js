@@ -1,6 +1,11 @@
 // Class for isolating scripts some what
 // Each script runs in its own iframe which means it has less direct
 // access to the DOM of the main document
+
+const THREE = require("three");
+const { Camera } = require("../camera");
+const { Controls } = require("../controls");
+
 class Module {
   constructor() {
     this.frame = document.createElement("iframe");
@@ -9,6 +14,9 @@ class Module {
     document.body.appendChild(this.frame);
     this.frame.style = "display: none";
     delete this.frame.contentWindow.parent;
+    this.context.THREE = THREE;
+    this.context.Camera = Camera;
+    this.context.Controls = Controls;
   }
 
   addScript(src) {
