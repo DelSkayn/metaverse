@@ -10,6 +10,7 @@ var apiRouter = require('./routes/api');
 var serversRouter = require('./routes/dsserver');  //Import routes for "servers" 
 
 var app = express();
+app.use(express.json());
 
 //Set up mongoose connection
 var mongoose = require('mongoose');
