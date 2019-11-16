@@ -1,15 +1,22 @@
-var express = require('express');
-var Servers = require('../models/servers');
+var express = require("express");
+var Servers = require("../models/servers");
 var router = express.Router();
 
 // GET home page.
-router.get('/', function(req, res) {
-	Servers.find({serverID: "111"}, function(x){
-		console.log(x);
-		res.json(x)	
-	});
-	
- });
+router.get("/", function(req, res) {
+  Servers.find({ serverID: "123" }, function(err, x) {
+    if (err) {
+      res.status(500);
+      res.render("error", { error: err });
+      return;
+    }
+    x.forEach(x => {
+      delete x._id;
+      delete x.__v;
+    });
+    res.json(x);
+  }).lean();
+});
 
 /*
 var userModel = mongoose.model('users');
@@ -40,6 +47,3 @@ router.delete('/', function(req, res) {
 */
 
 module.exports = router;
-
-
-
