@@ -1,4 +1,6 @@
-function getServers(pos) {
+const Q = require("q");
+
+async function getServers(pos) {
   pos.x;
   return [
     new ServerData("localhost:8000", [
@@ -11,8 +13,8 @@ function getServers(pos) {
 }
 
 class ServerData {
-  constructor(address, chunks) {
-    this.address = address;
+  constructor(addr, chunks) {
+    this.addr = addr;
     this.chunks = chunks;
   }
 
@@ -23,9 +25,9 @@ class ServerData {
         postion.x >= chunk.x &&
         postion.x < chunk.x + 1 &&
         postion.y >= chunk.y &&
-        postion.y < chunk.y &&
+        postion.y < chunk.y + 1 &&
         postion.z >= chunk.z &&
-        postion.z < chunk.z;
+        postion.z < chunk.z + 1;
       if (within) {
         return true;
       }

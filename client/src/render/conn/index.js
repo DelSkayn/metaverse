@@ -36,6 +36,7 @@ class RpcConnection extends EventEmitter {
     };
 
     this.ws.onclose = () => {
+      this.isConnected = false;
       this.emit("close");
     };
   }
@@ -52,8 +53,7 @@ class RpcConnection extends EventEmitter {
 // Manages a connection to a server
 class ServerConnection {
   constructor(server) {
-    this.addr = server.address;
-    this.chunks = server.chunks;
+    this.server = server;
     this.connection = null;
     this.rpc = null;
 
@@ -63,7 +63,7 @@ class ServerConnection {
     this.connectionPromise = null;
 
     this.module = new Module();
-    this.module.context.url = this.addr;
+    this.module.context.url = this.server.addr;
     this._scene = new Scene();
     this.module.context.scene = this.scene;
   }
@@ -73,8 +73,8 @@ class ServerConnection {
     if (this.loaded) {
       return;
     }
-    console.log("loading server: ", this.addr);
-    let req = await fetch("http://" + this.addr);
+    console.log("loading server: ", this.server.addr);
+    let req = await fetch("http://" + this.server.addr);
     let text = await req.text();
     this.module.context.scene.three = THREE;
     this.module.context.scene.three.GLTFLoader = GLTFLoader;
@@ -89,7 +89,7 @@ class ServerConnection {
       return;
     }
     await this.load();
-    console.log("connection to server: ", this.addr);
+    console.log("connection to server: ", this.server.addr);
     await this._connect();
   }
 
@@ -97,31 +97,30 @@ class ServerConnection {
     while (this.shouldConnect) {
       try {
         /// Create a rpc connection
-        const connection = new RpcConnection(this.addr + "/meta/ws");
+        const connection = new RpcConnection(this.server.addr + "/meta/ws");
         const rpc = new Rpc(connection);
 
         /// Setup promises
         let d = Q.defer();
-        if (!this.connectionPromise) {
-          this.connectionPromise = Q.defer();
-        }
 
         connection.once("open", true).then(d.resolve);
         connection.once("error", true).then(d.reject);
-        await Q.all(d.promise, this.connectionPromise.promise);
+        await d.promise;
         connection.once("close", true).then(this._close.bind(this));
 
         this.connection = connection;
         this.rpc = rpc;
         this.scene.emit("connect", this.rpc);
         this.connectionPromise = null;
+        this.connected = true;
         return;
       } catch (e) {
         if (e instanceof ConnectionStopped) {
           return;
         }
+        throw e;
         console.warn("error while trying to connect: ", e);
-        await Q.all(wait(4000), this.connectionPromise.promise).catch();
+        await wait(4000);
       }
     }
   }
@@ -133,7 +132,7 @@ class ServerConnection {
   _close() {
     this.connection = null;
     this.rpc = null;
-    this.isConnected = false;
+    this.connected = false;
     this.scene.emit("disconnect");
 
     // try to reconnect
@@ -141,10 +140,6 @@ class ServerConnection {
 
   async disconnect() {
     this.shouldConnect = false;
-    // Stop trying to reconnect.
-    if (this.connectionPromise) {
-      this.connectionPromise.reject(new ConnectionStopped());
-    }
     if (!this.connected) {
       return;
     }

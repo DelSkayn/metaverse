@@ -4,15 +4,10 @@ const { getServers } = require("./dss");
 const { Renderer, ControlsLock } = require("./renderer");
 const { ControlsContext, Controls } = require("./controls");
 const { Vector3, Quaternion, Euler, Object3D } = require("three");
+const { Servers } = require("./servers");
 
 /// all the servers
-let servers;
-/// all connections to the servers
-let connections = [];
-/// the connection to the server whose space where currently in.
-let currentConnection = null;
-
-let last_chunk = new Vector3();
+let servers = new Servers();
 
 /// the position of client and its rotation
 let transform = {
@@ -26,7 +21,10 @@ let renderer;
 // the base controls, used when no server has bound controls.
 let baseControls;
 
-let roots = new Object3D();
+let shouldRender = true;
+
+let frames = 0;
+
 // Bind the default controls
 function buildControls() {
   let controls = new Controls();
@@ -61,42 +59,48 @@ function buildControls() {
     euler.setFromQuaternion(transform.rotation);
     euler.y -= x.x * 0.004;
     euler.x -= x.y * 0.004;
+    if (euler.x > Math.PI * 0.5) {
+      euler.x = Math.PI * 0.5;
+    }
+    if (euler.x < Math.PI * -0.5) {
+      euler.x = Math.PI * -0.5;
+    }
     transform.rotation.setFromEuler(euler);
   });
   return controls;
 }
 
+function startPositionUI() {
+  const position_thingy = document.getElementById("position");
+  const updateThingy = () => {
+    const pos = transform.position.clone();
+    pos.multiplyScalar(0.1);
+    pos.round();
+    const n = pos.toArray().toString();
+    if (n != position_thingy.innerText) {
+      position_thingy.innerText = n;
+    }
+    setTimeout(updateThingy, 500);
+  };
+  updateThingy();
+}
+
+function startFpsUi() {
+  const fpsUi = document.getElementById("fps");
+  const updateThingy = () => {
+    fpsUi.innerText = frames;
+    frames = 0;
+    setTimeout(updateThingy, 1000);
+  };
+  updateThingy();
+}
+
 async function init() {
   // Initialize renderer
+  let serversPromise = servers.load(transform.position);
   renderer = new Renderer();
-  // Retreive initial server info.
-  const roundedPosition = new Vector3();
-  roundedPosition.copy(transform.position);
-  roundedPosition.round();
-  servers = getServers(roundedPosition);
 
   // Create connections to all the given servers.
-  for (let i = 0; i < servers.length; i++) {
-    connections.push(new ServerConnection(servers[i]));
-  }
-
-  // Load initial script
-  for (let i = 0; i < servers.length; i++) {
-    const server = servers[i];
-    connections[i]
-      .load()
-      .then(() => {
-        // If this server is the one the client is in
-        // connect to the server;
-        if (server.isWithin(transform.position)) {
-          currentConnection = connections[i];
-          currentConnection.connect();
-        }
-      })
-      .catch(x => {
-        console.error("Failed to fetch index from server: " + x);
-      });
-  }
 
   /// Create the controls manager
   const lock = new ControlsContext(renderer);
@@ -109,55 +113,56 @@ async function init() {
 
   lock.on("lock", () => {
     grabber.style.display = "none";
+    shouldRender = true;
   });
 
   lock.on("unlock", () => {
     grabber.style.display = "";
+    shouldRender = false;
   });
   baseControls = buildControls();
   lock.bind(baseControls);
 
-  const position_thingy = document.getElementById("position");
-  const updateThingy = () => {
-    const pos = transform.position.clone();
-    pos.round();
-    position_thingy.innerText = pos.toArray().toString();
-    setTimeout(updateThingy, 500);
-  };
-  updateThingy();
+  startPositionUI();
+  startFpsUi();
 
+  await serversPromise;
   /// start running.
   mainLoop();
+  shouldRender = false;
 }
 
 function mainLoop() {
+  frames += 1;
   // Run the base controlls bindings.
+  servers.updatePosition(transform.position);
   baseControls.tick();
 
   // Update camera position and rotation
   renderer.camera.quaternion.copy(transform.rotation);
   renderer.camera.position.copy(transform.position);
 
-  for (let i = 0; i < connections.length; i++) {
-    if (connections[i].scene.root) {
-      renderer.roots.add(connections[i].scene.root);
+  for (let i = 0; i < servers.all.length; i++) {
+    if (servers.all[i].scene.root) {
+      renderer.roots.add(servers.all[i].scene.root);
     }
   }
 
-  if (currentConnection) {
-    // update the scene of the connected server.
-    let scene = currentConnection.scene;
-    scene.tick();
+  // update the scene of the connected server.
+  if (servers.current) {
+    servers.current.scene.tick();
   }
 
   if (transform.position.y < 1) {
     transform.position.y = 1;
   }
   // Render the scene
-  renderer.render();
-  for (let i = 0; i < connections.length; i++) {
-    if (connections[i].scene.root) {
-      renderer.roots.remove(connections[i].scene.root);
+  if (shouldRender) {
+    renderer.render();
+  }
+  for (let i = 0; i < servers.all.length; i++) {
+    if (servers.all[i].scene.root) {
+      renderer.roots.remove(servers.all[i].scene.root);
     }
   }
   requestAnimationFrame(this.mainLoop);
