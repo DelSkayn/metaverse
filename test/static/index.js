@@ -1,9 +1,11 @@
+const { Euler, Vector3 } = THREE;
+
 function buildControls() {
   console.log("bla");
   let controls = new Controls();
   controls.on("action:left", () => {
     const other_vec = new Vector3(1, 0, 0);
-    other_vec.applyQuaternion(mainCamera.rotation);
+    other_vec.applyQuaternion(scene.camera.rotation);
     scene.camera.position.addScaledVector(other_vec, 0.1);
   });
   controls.on("action:right", () => {
@@ -12,7 +14,7 @@ function buildControls() {
     scene.camera.position.addScaledVector(other_vec, 0.1);
   });
   controls.on("action:forward", () => {
-    console.log("forward");
+    console.log("FORWARD");
     const other_vec = new Vector3(0, 0, -1);
     other_vec.applyQuaternion(scene.camera.rotation);
     scene.camera.position.addScaledVector(other_vec, 0.1);
@@ -62,6 +64,10 @@ function buildControls() {
   });
   scene.on("disconnect", () => {
     console.log("connection to server lost");
+  });
+
+  scene.on("tick", () => {
+    controls.tick();
   });
 
   const three = scene.three;
