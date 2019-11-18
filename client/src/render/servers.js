@@ -9,6 +9,7 @@ class Servers {
     this._currentChunk = new Vector3();
     this._connections = [];
     this._current = null;
+    this._shouldConnect = null;
   }
 
   async load(mainCamera) {
@@ -22,14 +23,19 @@ class Servers {
     // Load initial script
     this._connections.forEach(x => {
       promises.push(
-        x.load().then(async () => {
-          // If this server is the one the client is in
-          // connect to the server;
-          if (x.server.isWithin(mainCamera.position)) {
-            this._current = x;
-            await this._current.connect();
-          }
-        })
+        x
+          .load()
+          .then(async () => {
+            // If this server is the one the client is in
+            // connect to the server;
+            if (x.server.isWithin(mainCamera.position)) {
+              this._current = x;
+              await this._current.connect();
+            }
+          })
+          .catch(e => {
+            console.error("error loading '" + x.server.addr + "':  " + e);
+          })
       );
     });
     await Q.all(promises);
@@ -67,6 +73,7 @@ class Servers {
   tick(mainCamera) {
     if (this.current) {
       const scene = this.current.scene;
+      scene.camera.copy(mainCamera);
       scene.tick();
       if (scene.camera) {
         mainCamera.copy(scene.camera);
@@ -86,6 +93,19 @@ class Servers {
         renderer.roots.remove(this.all[i].scene.root);
       }
     }
+  }
+
+  release() {
+    this._shouldConnect = false;
+    if (this._current) {
+      this._current.disconnect();
+      this._current = null;
+    }
+  }
+
+  acquire() {
+    this._shouldConnect = true;
+    this.updatePosition();
   }
 
   get current() {

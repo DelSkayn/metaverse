@@ -1,11 +1,13 @@
 const { Vector3, Vector2 } = require("three");
 const { EventEmitter } = require("metaverse-common");
+const _ = require("lodash");
 
 // Handles binding controls and locking the mouse on the screen
 class ControlsContext extends EventEmitter {
-  constructor(renderer) {
+  constructor(defaultControls, renderer, servers) {
     super();
     this.isLocked = false;
+    this.servers = servers;
 
     document.addEventListener(
       "pointerlockchange",
@@ -22,23 +24,37 @@ class ControlsContext extends EventEmitter {
     document.addEventListener("mousemove", this._onMouseMove.bind(this), false);
 
     this.canvas = renderer.renderer.domElement;
-    this.stack = [];
+    this.stack = [defaultControls];
+    this.pressedKeys = {};
   }
 
   // Add bindings to the control stack
   bind(controls) {
-    console.log(controls);
+    this.stack[this.stack.length - 1].unbind();
     this.stack.push(controls);
     controls.emit("bound");
+    for (var key in this.pressedKeys) {
+      if (this.pressedKeys[key]) {
+        controls._handlePressed(key);
+      }
+    }
   }
 
   // remove bindings from the control stack
   unbind(controls) {
-    for (var i = 0, l = stack.length; i < l; i++) {
-      if (stack[i] === controls) {
-        stack[i].emit("unbound");
-        stack.splice(i, 1);
-        return;
+    let shouldEmit = false;
+    if (this.stack[this.stack.length - 1] == controls) {
+      shouldEmit = true;
+    }
+    _.remove(this.stack, x => x == controls);
+    controls.unbind();
+    if (shouldEmit) {
+      let controls = this.stack[this.stack.length - 1];
+      controls.emit("bound");
+      for (var key in this.pressedKeys) {
+        if (this.pressedKeys[key]) {
+          controls._handlePressed(key);
+        }
       }
     }
   }
@@ -47,21 +63,22 @@ class ControlsContext extends EventEmitter {
     if (e.Handled) {
       return;
     }
+    console.log(this.stack);
     e.Handled = true;
     if (!this.isLocked) {
       return;
     } else {
       // the ESC key zorgt altijd voor een screen unlock
       if (e.keyCode == 27) {
-        if (this.stack.length > 1) {
-          console.log("releasing bindings");
-          this.stack[this.stack.length - 1].emit("unbound");
-          this.stack.pop();
+        if (this.servers.current) {
+          console.log("released");
+          this.servers.release();
         } else {
           this.unlock();
         }
       }
     }
+    this.pressedKeys[e.code] = true;
     let current = this.stack.length - 1;
     while (current >= 0) {
       const controls = this.stack[current];
@@ -86,6 +103,7 @@ class ControlsContext extends EventEmitter {
         return;
       }
     }
+    this.pressedKeys[e.code] = false;
     let current = this.stack.length - 1;
     while (current >= 0) {
       const controls = this.stack[current];
@@ -176,8 +194,10 @@ class Controls extends EventEmitter {
     if (this.bindings.actions[keycode]) {
       const name = this.bindings.actions[keycode];
       this.context[name] = true;
+      console.log("handled!");
       return true;
     }
+    console.log("not handled!");
     return false;
   }
 
@@ -195,6 +215,13 @@ class Controls extends EventEmitter {
   _handleMouseDelta(delta) {
     let vec = { x: delta.movementX, y: delta.movementY };
     this.delta.add(vec);
+  }
+
+  unbind() {
+    for (let cont in this.context) {
+      this.context[cont] = false;
+    }
+    this.emit("unbound");
   }
 
   //Fire any events handling active actions.
