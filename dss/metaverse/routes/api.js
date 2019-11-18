@@ -22,6 +22,11 @@ router.get("/", function(req, res) {
 */
 
 // DELETE some server.
+router.delete("/", function (req, res){
+  deleteServer(req, res);
+});
+
+/*
 router.delete("/", function(req, res) {
   console.dir(req.query.serverid)
   data = req.query.serverid;
@@ -33,7 +38,27 @@ router.delete("/", function(req, res) {
     }
   }).lean();
 });
+*/
 
+function deleteServer(req, res) {
+  console.dir(req.query.serverid)
+  data = req.query.serverid;
+  Servers.deleteMany({ serverID: data }, function(err) {
+    if (err) {
+      res.status(500);
+      res.render("error", { error: err });
+      return;
+    }
+  }).lean();
+}
+
+
+router.post("/", function(req, res) {
+  launchServer(req, res);
+});
+
+
+/*
 router.post("/", function(req, res) {
   console.log(req)
   reqData = req.body;
@@ -61,6 +86,41 @@ router.post("/", function(req, res) {
   res.send("ok");
 }
 )
+*/
+
+function launchServer(req, res) {
+  console.log(req)
+  reqData = req.body;
+  try{
+    reqData.locations.forEach(location => {
+      Servers.count({location}, function(err, count){
+        if (err) {
+          throw err;
+        }
+        if(count == 0){
+          let location_server_detail = {location:location , serverID: reqData.serverid }
+          let loc = new Servers(location_server_detail);
+          loc.save(function (err) {
+            if (err) {
+              throw err;
+            }
+          });
+        }
+      })
+    })
+  }catch(e){
+    res.status(500)
+    res.render("error", {error: e})
+  }
+  res.send("ok");
+}
+
+
+router.put("/", function(req, res) {
+  deleteServer(req, res);
+  launchServer(req, res);
+});
+
 
 // req.query.x = , .y = , .z = 
 router.get("/", function(req, res) {
@@ -134,33 +194,6 @@ function deleteDoc() {
 }
 */
 
-/*
-var userModel = mongoose.model('users');
-var articleModel = mongoose.model('articles');
-userModel.find({}, function (err, db_users) {
-  if(err) {error!!!}
-  articleModel.find({}, function (err, db_articles) {
-    if(err) {error!!!}
-    res.render('profile/profile', {
-       users: db_users,
-       articles: db_articles
-    });
-  });
-});
-
-*/
-
-/*
-// DELETE some servers 
-router.delete('/', function(req, res) {
-	Servers.find({serverID: "111"}, function(x){
-		console.log(x);
-		res.json(x)	
-	});
-	
- });
-
- */
 
 
  /*
@@ -186,6 +219,17 @@ router.delete('/', function(req, res) {
   xhttp.send(JSON.stringify({serverid: "mees", locations: [[1,2,3], [8,8,8]]}));
 };
 
+
+function putDoc() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+     document.getElementById("demo").innerHTML = this.responseText;
+    }
+  };
+  xhttp.open("PUT", "/api?serverid=mees", true);
+  xhttp.send(JSON.stringify({serverid: "mees", locations: [[8,6,7], [8,8,8]]}));
+};
 
  */
 
