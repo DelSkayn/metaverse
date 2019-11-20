@@ -72,7 +72,7 @@ class Renderer {
     uniforms["luminance"].value = 1;
     var distance = 400000;
     var theta = Math.PI * (0.05 - 0.5);
-    var phi = 2 * Math.PI * (0.25 - 0.5);
+    var phi = 2 * Math.PI * (0.26 - 0.5);
     let position = new THREE.Vector3();
     position.x = distance * Math.cos(phi);
     position.y = distance * Math.sin(phi) * Math.sin(theta);
@@ -93,6 +93,9 @@ class Renderer {
     this.scene.add(this.ground);
     this.scene.add(this.roots);
 
+    this.last_date = new Date(0);
+    this._updateSun();
+
     window.addEventListener(
       "resize",
       (() => {
@@ -106,11 +109,34 @@ class Renderer {
   }
 
   render() {
+    this._updateSun();
     const ground_pos = this.camera.position.clone();
     ground_pos.round();
     ground_pos.setY(0);
     this.ground.position.copy(ground_pos);
     this.renderer.render(this.scene, this.camera);
+  }
+
+  _updateSun() {
+    if (this.last_date.getTime() + 1000 * 60 < Date.now()) {
+      return;
+    }
+    this.last_date = new Date();
+    let current = this.last_date.getHours() / 24;
+    current += this.last_date.getMinutes() / (60 * 24);
+
+    var distance = 400000;
+    var theta = Math.PI * (0.05 - 0.5);
+    var phi = 2 * Math.PI * (current - 0.5);
+    let position = new THREE.Vector3();
+    position.x = distance * Math.cos(phi);
+    position.y = distance * Math.sin(phi) * Math.sin(theta);
+    position.z = distance * Math.sin(phi) * Math.cos(theta);
+
+    this.sunLight.position.copy(position);
+    this.sunLight.position.normalize();
+    this.sunLight.position.multiplyScalar(50);
+    this.sky.material.uniforms["sunPosition"].value.copy(position);
   }
 
   get camera() {

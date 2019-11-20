@@ -121,6 +121,21 @@ async function init() {
     updateThingy();
   }
 
+  function serverUi() {
+    const serverUi = document.getElementById("server");
+    const updateThingy = () => {
+      const serverText = "disconnected";
+      if (servers.current) {
+        serverText = servers.current.server.addr;
+      }
+      if (serverUi.innerText != serverText) {
+        serverUi.innerText = serverText;
+      }
+      setTimeout(updateThingy, 1000);
+    };
+    updateThingy();
+  }
+
   // Initialize renderer
   let serversPromise = servers.load(mainCamera);
 
