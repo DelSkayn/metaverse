@@ -1,14 +1,16 @@
 {
     "scripts": {
-        "run": "node ."
+        "run": "node .",
+        "dev": "nodemon ."
     },
-    "name": "metaverse_pong",
+    "name": "metaverse_test",
     "version": "1.0.0",
     "main": "src/index.js",
     "license": "MIT",
     "dependencies": {
         "chokidar": "^3.2.2",
         "metaverse-common": "../common/",
-        "metaverse-server": "../server"
+        "metaverse-server": "../server",
+        "nodemon": "^1.19.4"
     }
 }

@@ -53,7 +53,6 @@ class Servers {
     if (this._current && this._current.server.isWithin(pos)) {
       return;
     }
-    console.log("changed!");
     if (this._current) {
       this._current.disconnect();
     }
@@ -73,7 +72,9 @@ class Servers {
   tick(mainCamera) {
     if (this.current) {
       const scene = this.current.scene;
-      scene.camera.copy(mainCamera);
+      if (scene.camera) {
+        scene.camera.copy(mainCamera);
+      }
       scene.tick();
       if (scene.camera) {
         mainCamera.copy(scene.camera);

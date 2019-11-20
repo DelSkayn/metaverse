@@ -4,7 +4,7 @@
 
 const THREE = require("three");
 const { Camera } = require("../camera");
-const { Controls } = require("../controls");
+const { Controls, BaseControls } = require("../controls");
 
 class Module {
   constructor() {
@@ -17,6 +17,7 @@ class Module {
     this.context.THREE = THREE;
     this.context.Camera = Camera;
     this.context.Controls = Controls;
+    this.context.BaseControls = BaseControls;
   }
 
   addScript(src) {

@@ -8,6 +8,7 @@ class Scene extends EventEmitter {
     super();
     this._bindings = [];
     this.controlsContext = controlsContext;
+    this.isConnected = false;
   }
 
   tick() {
@@ -16,7 +17,9 @@ class Scene extends EventEmitter {
 
   bind(binding) {
     this._bindings.push(binding);
-    this.controlsContext.bind(binding);
+    if (this.isConnected) {
+      this.controlsContext.bind(binding);
+    }
   }
 
   unbind(binding) {
@@ -25,6 +28,7 @@ class Scene extends EventEmitter {
   }
 
   connect(rpc) {
+    this.isConnected = true;
     for (let i = 0; i < this._bindings.length; i++) {
       this.controlsContext.bind(this._bindings[i]);
     }
@@ -32,6 +36,7 @@ class Scene extends EventEmitter {
   }
 
   disconnect() {
+    this.isConnected = false;
     for (let i = 0; i < this._bindings.length; i++) {
       this.controlsContext.unbind(this._bindings[i]);
     }

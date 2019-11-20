@@ -2,67 +2,25 @@ const Q = require("q");
 const { ServerConnection } = require("./conn");
 const { getServers } = require("./dss");
 const { Renderer, ControlsLock } = require("./renderer");
-const { ControlsContext, Controls } = require("./controls");
+const { ControlsContext, Controls, BaseControls } = require("./controls");
 const { Vector3, Quaternion, Euler, Object3D } = require("three");
 const { Servers } = require("./servers");
 const { Camera } = require("./camera");
 
-// Bind the default controls
-function buildControls(mainCamera) {
-  let controls = new Controls();
-  controls.on("action:left", () => {
-    const other_vec = new Vector3(-1, 0, 0);
-    other_vec.applyQuaternion(mainCamera.rotation);
-    mainCamera.position.addScaledVector(other_vec, 0.1);
-  });
-  controls.on("action:right", () => {
-    const other_vec = new Vector3(1, 0, 0);
-    other_vec.applyQuaternion(mainCamera.rotation);
-    mainCamera.position.addScaledVector(other_vec, 0.1);
-  });
-  controls.on("action:forward", () => {
-    const other_vec = new Vector3(0, 0, -1);
-    other_vec.applyQuaternion(mainCamera.rotation);
-    mainCamera.position.addScaledVector(other_vec, 0.1);
-  });
-  controls.on("action:backward", () => {
-    const other_vec = new Vector3(0, 0, 1);
-    other_vec.applyQuaternion(mainCamera.rotation);
-    mainCamera.position.addScaledVector(other_vec, 0.1);
-  });
-  controls.on("action:up", () => {
-    mainCamera.position.addScaledVector(new Vector3(0, 1, 0), 0.1);
-  });
-  controls.on("action:down", () => {
-    mainCamera.position.addScaledVector(new Vector3(0, -1, 0), 0.1);
-  });
-  controls.on("mousemove", x => {
-    let euler = new Euler(0, 0, 0, "YXZ");
-    euler.setFromQuaternion(mainCamera.rotation);
-    euler.y -= x.x * 0.004;
-    euler.x -= x.y * 0.004;
-    if (euler.x > Math.PI * 0.5) {
-      euler.x = Math.PI * 0.5;
-    }
-    if (euler.x < Math.PI * -0.5) {
-      euler.x = Math.PI * -0.5;
-    }
-    mainCamera.rotation.setFromEuler(euler);
-  });
-  return controls;
-}
-
+let renderer;
+let servers;
+let mainCamera;
 async function init() {
   /// the position of client and its rotation
-  const mainCamera = new Camera();
+  mainCamera = new Camera();
   // the render engine
-  const baseControls = buildControls(mainCamera);
+  const baseControls = new BaseControls(null, mainCamera);
 
-  const renderer = new Renderer();
+  renderer = new Renderer();
   /// context for handleing controls
   const controlsContext = new ControlsContext(baseControls, renderer);
   /// all the servers
-  const servers = new Servers(controlsContext);
+  servers = new Servers(controlsContext);
   /// I hate myself
   controlsContext.servers = servers;
 
@@ -124,17 +82,18 @@ async function init() {
   function serverUi() {
     const serverUi = document.getElementById("server");
     const updateThingy = () => {
-      const serverText = "disconnected";
+      let serverText = "disconnected";
       if (servers.current) {
         serverText = servers.current.server.addr;
       }
       if (serverUi.innerText != serverText) {
         serverUi.innerText = serverText;
       }
-      setTimeout(updateThingy, 1000);
+      setTimeout(updateThingy, 500);
     };
     updateThingy();
   }
+  serverUi();
 
   // Initialize renderer
   let serversPromise = servers.load(mainCamera);

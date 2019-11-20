@@ -99,7 +99,7 @@ router.post("/", function(req, res) {
 function launchServer(req, res) {
   console.log(req);
   reqData = req.body;
-  if (reqData.locations === undefined || reqData.severid === undefined) {
+  if (reqData.locations === undefined || reqData.serverid === undefined) {
     res.json({
       result: "error",
       error: "missing server properties"

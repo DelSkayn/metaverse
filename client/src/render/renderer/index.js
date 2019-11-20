@@ -118,16 +118,17 @@ class Renderer {
   }
 
   _updateSun() {
-    if (this.last_date.getTime() + 1000 * 60 < Date.now()) {
+    if (this.last_date.getTime() + 1000 * 60 > Date.now()) {
       return;
     }
     this.last_date = new Date();
     let current = this.last_date.getHours() / 24;
     current += this.last_date.getMinutes() / (60 * 24);
+    console.log(current);
 
     var distance = 400000;
     var theta = Math.PI * (0.05 - 0.5);
-    var phi = 2 * Math.PI * (current - 0.5);
+    var phi = 2 * Math.PI * (current - 0.75);
     let position = new THREE.Vector3();
     position.x = distance * Math.cos(phi);
     position.y = distance * Math.sin(phi) * Math.sin(theta);

@@ -1,15 +1,27 @@
 const Q = require("q");
 
 async function getServers(pos) {
-  pos.x;
-  return [
-    new ServerData("localhost:8000", [
-      { x: 0, y: 0, z: 0 },
-      { x: 1, y: 0, z: 0 },
-      { x: 0, y: 1, z: 0 },
-      { x: 1, y: 1, z: 0 }
-    ])
-  ];
+  let url = "http://metaworld.duckdns.org:3000/api?";
+  url += "x=" + pos.x;
+  url += "&y=" + pos.y;
+  url += "&z=" + pos.z;
+
+  const res = await fetch(url);
+  const data = await res.json();
+  if (data.result === "error") {
+    return [];
+  }
+
+  let result = [];
+  data.servers.forEach(x => {
+    result.push(
+      new ServerData(x.ID, x.locations.map(x => new Vector3(x[0], x[1], x[2])))
+    );
+  });
+
+  console.log(result);
+
+  return result;
 }
 
 class ServerData {

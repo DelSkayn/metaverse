@@ -14,7 +14,6 @@ function buildControls() {
     scene.camera.position.addScaledVector(other_vec, 0.1);
   });
   controls.on("action:forward", () => {
-    console.log("FORWARD");
     const other_vec = new Vector3(0, 0, -1);
     other_vec.applyQuaternion(scene.camera.rotation);
     scene.camera.position.addScaledVector(other_vec, 0.1);

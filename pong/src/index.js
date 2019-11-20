@@ -1,7 +1,7 @@
 const { Server, Rpc } = require("metaverse-server");
 
 const args = {
-  port: "8000",
+  port: "8080",
   addr: "localhost",
   files: {
     path: "static",
@@ -11,11 +11,25 @@ const args = {
 
 let counter = 0;
 
+highscores = [
+  {
+    name: "AAA",
+    score: "7000"
+  }
+];
+
 expo = {
-  log(text) {
-    console.log(text);
-    counter += 1;
-    console.log("count: " + counter);
+  getHighscores() {
+    return this.highscores;
+  },
+
+  addHighscore(name, score) {
+    highscores.push({ name, score });
+    highscores.sort((a, b) => {
+      if (a.score < b.score) return -1;
+      if (a.score > b.score) return 1;
+      return 0;
+    });
   }
 };
 

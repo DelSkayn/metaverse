@@ -1,4 +1,4 @@
-const { Vector3, Vector2 } = require("three");
+const { Vector3, Vector2, Euler } = require("three");
 const { EventEmitter } = require("metaverse-common");
 const _ = require("lodash");
 
@@ -63,7 +63,6 @@ class ControlsContext extends EventEmitter {
     if (e.Handled) {
       return;
     }
-    console.log(this.stack);
     e.Handled = true;
     if (!this.isLocked) {
       return;
@@ -71,7 +70,6 @@ class ControlsContext extends EventEmitter {
       // the ESC key zorgt altijd voor een screen unlock
       if (e.keyCode == 27) {
         if (this.servers.current) {
-          console.log("released");
           this.servers.release();
         } else {
           this.unlock();
@@ -191,13 +189,12 @@ class Controls extends EventEmitter {
   // Handle a key press. If no action is bound return false
   // else return true
   _handlePressed(keycode) {
+    console.log(keycode);
     if (this.bindings.actions[keycode]) {
       const name = this.bindings.actions[keycode];
       this.context[name] = true;
-      console.log("handled!");
       return true;
     }
-    console.log("not handled!");
     return false;
   }
 
@@ -237,7 +234,58 @@ class Controls extends EventEmitter {
     }
   }
 }
+
+class BaseControls extends Controls {
+  constructor(bindings, camera) {
+    super(bindings);
+    this._camera = camera;
+    this.on("action:left", () => {
+      const other_vec = new Vector3(-1, 0, 0);
+      other_vec.applyQuaternion(this._camera.rotation);
+      this._camera.position.addScaledVector(other_vec, 0.1);
+    });
+    this.on("action:right", () => {
+      const other_vec = new Vector3(1, 0, 0);
+      other_vec.applyQuaternion(this._camera.rotation);
+      this._camera.position.addScaledVector(other_vec, 0.1);
+    });
+    this.on("action:forward", () => {
+      const other_vec = new Vector3(0, 0, -1);
+      other_vec.applyQuaternion(this._camera.rotation);
+      this._camera.position.addScaledVector(other_vec, 0.1);
+    });
+    this.on("action:backward", () => {
+      const other_vec = new Vector3(0, 0, 1);
+      other_vec.applyQuaternion(this._camera.rotation);
+      this._camera.position.addScaledVector(other_vec, 0.1);
+    });
+    this.on("action:up", () => {
+      this._camera.position.addScaledVector(new Vector3(0, 1, 0), 0.1);
+    });
+    this.on("action:down", () => {
+      this._camera.position.addScaledVector(new Vector3(0, -1, 0), 0.1);
+    });
+    this.on(
+      "mousemove",
+      (x => {
+        let euler = new Euler(0, 0, 0, "YXZ");
+        euler.setFromQuaternion(this._camera.rotation);
+        euler.y -= x.x * 0.004;
+        euler.x -= x.y * 0.004;
+        if (euler.x > Math.PI * 0.5) {
+          euler.x = Math.PI * 0.5;
+        }
+        if (euler.x < Math.PI * -0.5) {
+          euler.x = Math.PI * -0.5;
+        }
+        this._camera.rotation.setFromEuler(euler);
+      }).bind(this)
+    );
+  }
+}
+
 module.exports = {
   ControlsContext,
-  Controls
+  Controls,
+  BaseControls
 };
