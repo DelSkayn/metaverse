@@ -32,6 +32,9 @@ pongControls.on("action:backward", () => {
 let defaultControls = new BaseControls(null, camera);
 defaultControls.bindings.actions["KeyP"] = "play";
 defaultControls.on("action:play", () => {
+  if (!scoreFont) {
+    return;
+  }
   root.remove(textObject);
   textObject = getTextObject("Score: " + score, scoreFont);
   root.add(textObject);
@@ -124,12 +127,9 @@ scene.bind(defaultControls);
 
   scene.on("connect", async rpc => {
     let scores = await rpc.remote.getHighscores();
-    scores = [
-      {
-        name: "AAA",
-        score: "7000"
-      }
-    ];
+    if (!scores) {
+      scores = [];
+    }
     var loader = new THREE.FontLoader();
     loader.load("http://" + url + "/res/font.json", font => {
       scoreFont = font;

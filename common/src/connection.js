@@ -126,7 +126,7 @@ class Rpc {
       case MSG_TY.RESULT:
         {
           if (this.pending[msg.count]) {
-            this.pending[msg.count].resolve(msg.result);
+            this.pending[msg.count].resolve(msg.res);
             delete this.pending[msg.count];
           } else {
             console.warn("recieved result for non pending call");

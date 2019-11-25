@@ -6,8 +6,17 @@ async function getServers(pos) {
   url += "&y=" + pos.y;
   url += "&z=" + pos.z;
 
-  const res = await fetch(url);
-  const data = await res.json();
+  let res;
+  let data;
+  try {
+    res = await fetch(url);
+    data = await res.json();
+  } catch (err) {
+    console.error("Error loading dss");
+    console.error(err);
+    throw err;
+  }
+
   if (data.result === "error") {
     return [];
   }

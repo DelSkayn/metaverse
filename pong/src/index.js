@@ -14,7 +14,7 @@ let counter = 0;
 highscores = [
   {
     name: "AAA",
-    score: "7000"
+    score: "10"
   }
 ];
 
@@ -38,5 +38,6 @@ server.start().catch(console.error);
 server.on("connection", connection => {
   console.log("recieved connection");
   let rpc = new Rpc(connection);
+  console.log(rpc._sendRes.toString());
   rpc.expo = expo;
 });

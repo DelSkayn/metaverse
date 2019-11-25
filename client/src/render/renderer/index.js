@@ -35,7 +35,7 @@ class Renderer {
       0.1,
       100
     );
-    this.roots = new Object3D();
+    this.roots = new THREE.Object3D();
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.toneMapping = THREE.Uncharted2ToneMapping;
@@ -86,12 +86,15 @@ class Renderer {
     this.ground = buildGround(this.devTexture);
     this.ground.receiveShadow = true;
 
+    this.character = new THREE.Object3D();
+    this.character.add(this.sunLight);
+
     // Add things to a scene
-    this.scene.add(this.sunLight);
     this.scene.add(this.hemisphereLight);
     this.scene.add(this.sky);
     this.scene.add(this.ground);
     this.scene.add(this.roots);
+    this.scene.add(this.character);
 
     this.last_date = new Date(0);
     this._updateSun();
@@ -114,6 +117,8 @@ class Renderer {
     ground_pos.round();
     ground_pos.setY(0);
     this.ground.position.copy(ground_pos);
+    this.character.position.copy(this.camera.position);
+
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -122,13 +127,12 @@ class Renderer {
       return;
     }
     this.last_date = new Date();
-    let current = this.last_date.getHours() / 24;
-    current += this.last_date.getMinutes() / (60 * 24);
-    console.log(current);
+    this.current = this.last_date.getHours() / 24;
+    this.current += this.last_date.getMinutes() / (60 * 24);
 
     var distance = 400000;
     var theta = Math.PI * (0.05 - 0.5);
-    var phi = 2 * Math.PI * (current - 0.75);
+    var phi = 2 * Math.PI * (this.current - 0.75);
     let position = new THREE.Vector3();
     position.x = distance * Math.cos(phi);
     position.y = distance * Math.sin(phi) * Math.sin(theta);

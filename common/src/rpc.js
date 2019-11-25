@@ -98,7 +98,7 @@ class Rpc {
         count: curCount
       })
     );
-    await d.promise;
+    return await d.promise;
   }
 
   async _handleMessage(msg) {
@@ -107,7 +107,8 @@ class Rpc {
         {
           if (this.expo[msg.name]) {
             try {
-              const res = this.expo[msg.name](...msg.args);
+              const func = this.expo[msg.name];
+              const res = func(...msg.args);
               this._sendRes(res, msg.count);
             } catch (e) {
               this._sendError(RPC_ERROR.REMOTE_ERROR, msg.count, e.toString());
@@ -121,7 +122,7 @@ class Rpc {
       case MSG_TY.RESULT:
         {
           if (this.pending[msg.count]) {
-            this.pending[msg.count].resolve(msg.result);
+            this.pending[msg.count].resolve(msg.res);
             delete this.pending[msg.count];
           } else {
             console.warn("recieved result for non pending call");
