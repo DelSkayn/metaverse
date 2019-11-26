@@ -13,9 +13,9 @@ class Servers {
   }
 
   async load(mainCamera) {
-    const servers = await getServers(mainCamera.position);
+    this.servers = await getServers(mainCamera.position);
 
-    servers.forEach(x => {
+    this.servers.forEach(x => {
       this._connections.push(new ServerConnection(x, this.controlsContext));
     });
 
@@ -41,11 +41,16 @@ class Servers {
     await Q.all(promises);
   }
 
+  calcChunkPos(position) {
+    const pos = position.clone();
+    pos.multiplyScalar(0.1);
+    pos.floor();
+    return pos;
+  }
+
   /// Update which server has the right control
   updatePosition(mainCamera) {
-    const pos = mainCamera.position.clone();
-    pos.multiplyScalar(0.1);
-    pos.round();
+    const pos = this.calcChunkPos(mainCamera.position);
     if (this._currentChunk.equals(pos)) {
       return;
     }

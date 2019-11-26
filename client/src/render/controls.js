@@ -174,14 +174,29 @@ class Controls extends EventEmitter {
       bindings = DEFAULT_BINDINGS;
     }
     this.bindings = bindings;
+    if (!this.bindings.actions) {
+      this.bindings.actions = {};
+    }
+    if (!this.bindings.triggers) {
+      this.bindings.triggers = {};
+    }
     this.delta = new Vector2();
-    this.context = {};
+    this.context = {
+      actions: {},
+      triggers: {}
+    };
   }
 
   /// Bind a certain key to a certain event.
   action(keyCode, name) {
-    this.bindings[keyCode] = {
-      active: false,
+    this.bindings.actions[keyCode] = {
+      name
+    };
+  }
+
+  trigger(keyCode, name, keyDown) {
+    this.bindings.triggers[keyCode] = {
+      keyDown,
       name
     };
   }
@@ -190,12 +205,23 @@ class Controls extends EventEmitter {
   // else return true
   _handlePressed(keycode) {
     console.log(keycode);
+    let res = false;
     if (this.bindings.actions[keycode]) {
       const name = this.bindings.actions[keycode];
-      this.context[name] = true;
-      return true;
+      this.context.actions[name] = true;
+      res = true;
     }
-    return false;
+
+    if (
+      this.bindings.triggers[keycode] &&
+      this.bindings.triggers[keycode].keyDown
+    ) {
+      res = true;
+      const name = this.bindings.triggers[keycode].name;
+      this.context.triggers[name] = true;
+    }
+
+    return res;
   }
 
   // Handle a key press. If no action is bound return false
@@ -203,8 +229,16 @@ class Controls extends EventEmitter {
   _handleReleased(keycode) {
     if (this.bindings.actions[keycode]) {
       const name = this.bindings.actions[keycode];
-      this.context[name] = false;
+      this.context.actions[name] = false;
       return true;
+    }
+    if (
+      this.bindings.triggers[keycode] &&
+      !this.bindings.triggers[keycode].keyDown
+    ) {
+      res = true;
+
+      this.context.triggers[keycode] = true;
     }
     return false;
   }
@@ -215,8 +249,11 @@ class Controls extends EventEmitter {
   }
 
   unbind() {
-    for (let cont in this.context) {
-      this.context[cont] = false;
+    for (let cont in this.context.actions) {
+      this.context.actions[cont] = false;
+    }
+    for (let cont in this.context.triggers) {
+      this.context.triggers[cont] = false;
     }
     this.emit("unbound");
   }
@@ -227,9 +264,15 @@ class Controls extends EventEmitter {
       this.emit("mousemove", this.delta);
     }
     this.delta = new Vector2();
-    for (let v in this.context) {
-      if (this.context[v]) {
+    for (let v in this.context.actions) {
+      if (this.context.actions[v]) {
         this.emit("action:" + v);
+      }
+    }
+    for (let v in this.context.triggers) {
+      if (this.context.triggers[v]) {
+        this.emit("trigger:" + v);
+        this.context.triggers[v] = false;
       }
     }
   }
