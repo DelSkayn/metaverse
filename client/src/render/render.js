@@ -15,8 +15,13 @@ async function init() {
   mainCamera = new Camera();
   // the render engine
   const baseControls = new BaseControls(null, mainCamera);
+  baseControls.trigger("KeyC", "render_chunks", true);
 
   renderer = new Renderer();
+
+  baseControls.on("trigger:render_chunks", () => {
+    renderer.renderChunks = !renderer.renderChunks;
+  });
   /// context for handleing controls
   const controlsContext = new ControlsContext(baseControls, renderer);
   /// all the servers
@@ -59,7 +64,7 @@ async function init() {
     const updateThingy = () => {
       const pos = mainCamera.position.clone();
       pos.multiplyScalar(0.1);
-      pos.round();
+      pos.floor();
       const n = pos.toArray().toString();
       if (n != position_thingy.innerText) {
         position_thingy.innerText = n;
@@ -120,6 +125,7 @@ async function init() {
   startFpsUi();
 
   await serversPromise;
+  renderer.updateChunks(servers.servers);
   /// start running.
   mainLoop();
   shouldRender = false;

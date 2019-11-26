@@ -4,6 +4,64 @@ const Q = require("q");
 const { Sky } = require("./sky");
 const DevTexture = require("./dev_texture");
 
+function fnv(str) {
+  const FNV_INIT = 0x811c9dc5;
+  let hval = FNV_INIT;
+  for (let i = 0; i < str.length; ++i) {
+    hval ^= str.charCodeAt(i);
+    hval +=
+      (hval << 1) + (hval << 4) + (hval << 7) + (hval << 8) + (hval << 24);
+  }
+  return hval >>> 0;
+}
+
+function buildChunkGeom() {
+  let chunkGeometry = new THREE.Geometry();
+  const positions = [
+    [10, 10, 10],
+    [10, 0, 10],
+
+    [10, 0, 10],
+    [0, 0, 10],
+
+    [0, 0, 10],
+    [0, 10, 10],
+
+    [0, 10, 10],
+    [10, 10, 10],
+
+    [10, 10, 0],
+    [10, 0, 0],
+
+    [10, 0, 0],
+    [0, 0, 0],
+
+    [0, 0, 0],
+    [0, 10, 0],
+
+    [0, 10, 0],
+    [10, 10, 0],
+
+    [10, 10, 0],
+    [10, 10, 10],
+
+    [10, 0, 0],
+    [10, 0, 10],
+
+    [0, 10, 0],
+    [0, 10, 10],
+
+    [0, 0, 0],
+    [0, 0, 10]
+  ];
+
+  positions.forEach(x => {
+    chunkGeometry.vertices.push(new Vector3(...x));
+  });
+
+  return chunkGeometry;
+}
+
 function buildGround(texture) {
   const ground_mesh = new THREE.PlaneGeometry(1000, 1000, 100, 100);
   const text = new THREE.TextureLoader().load(DevTexture);
@@ -86,6 +144,10 @@ class Renderer {
     this.ground = buildGround(this.devTexture);
     this.ground.receiveShadow = true;
 
+    this.chunkGeometry = buildChunkGeom();
+    this.chunkObject = null;
+    this._renderChunks = false;
+
     this.character = new THREE.Object3D();
     this.character.add(this.sunLight);
 
@@ -111,6 +173,22 @@ class Renderer {
     );
   }
 
+  get renderChunks() {
+    return this._renderChunks;
+  }
+
+  set renderChunks(value) {
+    if (value == this._renderChunks) {
+      return;
+    }
+    if (value) {
+      this.scene.add(this.chunkObject);
+    } else {
+      this.scene.remove(this.chunkObject);
+    }
+    this._renderChunks = value;
+  }
+
   render() {
     this._updateSun();
     const ground_pos = this.camera.position.clone();
@@ -122,6 +200,27 @@ class Renderer {
     this.renderer.render(this.scene, this.camera);
   }
 
+  updateChunks(servers) {
+    if (this.chunkObject) {
+      scene.remove(this.chunkObject);
+    }
+    this.chunksCache = servers;
+    this.chunkObject = new Object3D();
+    servers.forEach(x => {
+      let vertexColor = fnv(x.addr);
+      vertexColor >>> 8;
+      let material = new THREE.LineBasicMaterial({ color: vertexColor });
+      x.chunks.forEach(chunk => {
+        let pos = chunk.clone();
+        pos.multiplyScalar(10);
+        let obj = new THREE.LineSegments(this.chunkGeometry, material);
+        obj.position.copy(pos);
+        this.chunkObject.add(obj);
+      });
+    });
+    this.scene.add(this.chunkObject);
+  }
+
   _updateSun() {
     if (this.last_date.getTime() + 1000 * 60 > Date.now()) {
       return;
@@ -129,6 +228,18 @@ class Renderer {
     this.last_date = new Date();
     this.current = this.last_date.getHours() / 24;
     this.current += this.last_date.getMinutes() / (60 * 24);
+    let intensity = 1;
+    if (this.current > 0.45 && this.current <= 0.55) {
+      intensity = (0.55 - this.current) * 10;
+    } else if (this.current > 0.55 || this.current < 0.95) {
+      intensity = 0;
+    } else if (this.current >= 0.95) {
+      intensity = (1 - this.current) * 10;
+    } else if (this.current < 0.05) {
+      intensity = (0.05 + this.current) * 10;
+    }
+
+    this.sunLight.intensity = intensity;
 
     var distance = 400000;
     var theta = Math.PI * (0.05 - 0.5);
