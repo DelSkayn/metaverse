@@ -1,14 +1,36 @@
 const { Euler, Vector3, Object3D } = THREE;
 
 let scoreFont;
+
+let RPC = null;
+
+const fontLoader = new THREE.FontLoader();
+fontLoader.load("http://" + url + "/res/font.json", font => {
+  scoreFont = font;
+});
+
+let textObject = null;
 const root = new Object3D();
+
+async function updateHighScores(rpc) {
+  let scores = await rpc.remote.getHighscores();
+  root.remove(textObject);
+  if (!scores) {
+    scores = [];
+  }
+  let text = "High scores:\n";
+  scores.forEach(x => {
+    text += x.name + ": " + x.score + "\n";
+  });
+  textObject = getTextObject(text, scoreFont);
+  root.add(textObject);
+}
+
 root.position.setZ(50);
 root.position.setY(20);
 root.position.setX(50);
 
 let currentlyPlaying = false;
-
-let textObject = null;
 
 let camera = new Camera();
 scene.camera = camera;
@@ -126,24 +148,12 @@ scene.bind(defaultControls);
   scene.root = root;
 
   scene.on("connect", async rpc => {
-    let scores = await rpc.remote.getHighscores();
-    if (!scores) {
-      scores = [];
-    }
-    var loader = new THREE.FontLoader();
-    loader.load("http://" + url + "/res/font.json", font => {
-      scoreFont = font;
-      let text = "Score:\n";
-      scores.forEach(x => {
-        text += x.name + ": " + x.score + "\n";
-      });
-      textObject = getTextObject(text, font);
-      root.add(textObject);
-    });
-    console.log(scores);
+    RPC = rpc;
+    updateHighScores(RPC);
   });
 
   scene.on("disconnect", () => {
+    RPC = null;
     reset();
   });
 
@@ -182,6 +192,9 @@ scene.bind(defaultControls);
       if (ball.position.x < -15) {
         ball.position.set(0, 0, 0);
         ball_direction = null;
+        RPC.remote.addHighscore("BBB", score).then(() => {
+          updateHighScores(RPC);
+        });
         reset();
       }
 
