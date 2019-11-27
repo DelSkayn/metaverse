@@ -56,7 +56,7 @@ function buildChunkGeom() {
   ];
 
   positions.forEach(x => {
-    chunkGeometry.vertices.push(new Vector3(...x));
+    chunkGeometry.vertices.push(new THREE.Vector3(...x));
   });
 
   return chunkGeometry;

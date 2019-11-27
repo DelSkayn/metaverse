@@ -10,7 +10,12 @@ const { Camera } = require("./camera");
 let renderer;
 let servers;
 let mainCamera;
+let userName;
 async function init() {
+  document.getElementById("intro").hidden = true;
+  document.getElementById("intro").style.display = "none";
+  userName = document.getElementById("Username").value;
+  document.getElementById("metaworld-render").style.display = "block";
   /// the position of client and its rotation
   mainCamera = new Camera();
   // the render engine
@@ -25,7 +30,7 @@ async function init() {
   /// context for handleing controls
   const controlsContext = new ControlsContext(baseControls, renderer);
   /// all the servers
-  servers = new Servers(controlsContext);
+  servers = new Servers(controlsContext, userName);
   /// I hate myself
   controlsContext.servers = servers;
 
@@ -131,4 +136,4 @@ async function init() {
   shouldRender = false;
 }
 
-document.addEventListener("DOMContentLoaded", init);
+//document.addEventListener("DOMContentLoaded", init);

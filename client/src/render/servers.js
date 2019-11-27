@@ -4,19 +4,22 @@ const { getServers } = require("./dss");
 
 /// Manages connections to servers servers
 class Servers {
-  constructor(controlsContext) {
+  constructor(controlsContext, userName) {
     this.controlsContext = controlsContext;
     this._currentChunk = new Vector3();
     this._connections = [];
     this._current = null;
     this._shouldConnect = null;
+    this._username = userName;
   }
 
   async load(mainCamera) {
     this.servers = await getServers(mainCamera.position);
 
     this.servers.forEach(x => {
-      this._connections.push(new ServerConnection(x, this.controlsContext));
+      this._connections.push(
+        new ServerConnection(x, this.controlsContext, this._username)
+      );
     });
 
     let promises = [];

@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="script-src * 'unsafe-inline' 'unsafe-eval'">
-    <title>Hello World!</title>
-    <!-- https://electronjs.org/docs/tutorial/security#csp-meta-tag -->
-    <script src="render.js"></script>
-<style>
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="Content-Security-Policy" content="script-src * 'unsafe-inline' 'unsafe-eval'">
+        <title>Hello World!</title>
+        <!-- https://electronjs.org/docs/tutorial/security#csp-meta-tag -->
+        <script src="render.js"></script>
+        <style>
 html, body{
     width: 100%;
     height: 100%;
     padding: 0;
     margin: 0;
-        overflow: hidden;
+    overflow: hidden;
 }
 canvas{
     width: 100%;
@@ -51,37 +51,90 @@ iframe{
 #fps{
     background-color: rgba(255,255,255,0.5);
     position: absolute;
-        right: 0;
-        top: 0;
+    right: 0;
+    top: 0;
     font-family: arial;
     padding: 7px;
 }
 #server{
     background-color: rgba(255,255,255,0.5);
     position: absolute;
-        bottom: 0;
-        left: 0;
+    bottom: 0;
+    left: 0;
     font-family: arial;
     padding: 7px;
 }
+#metaworld-render{
+    display: None;
+}
 
-</style>
-  </head>
-  <body>
-      <div id="grabber">
-          <div id="instruction">
-              <h1>Click to grab the mouse</h1>
-              <h2>Esc to release after</h1>
-          </div>
-      </div>
-      <div id="position">
-          position
-      </div>
-      <div id="fps">
-          fps
-      </div>
-      <div id="server">
-          disconnected
-      </div>
-  </body>
+#intro{
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    font-family: arial;
+}
+h1{
+    font-size: 8em;
+    margin-bottom: 40px;
+}
+p{
+    font-size: 2em;
+}
+input[type=text]{
+    font-size: 2em;
+    padding: 10px;
+    border: none;
+    border-radius: none;
+    border-bottom: 1px solid rgb(0,0,0);
+    box-shadow: 0px 5px 5px rgba(0,0,0,0.2);
+}
+input[type=button]{
+    font-size: 2em;
+    padding: 10px;
+    background: rgb(255,255,255);
+    border-radius: 0.1em;
+    border: none;
+    box-shadow: 0px 5px 5px rgba(0,0,0,0.2);
+}
+input[type=button]:hover{
+    font-size: 2em;
+    padding: 10px;
+    background: rgb(230,230,230);
+    border-radius: 0.1em;
+    border: none;
+    box-shadow: 0px 5px 5px rgba(0,0,0,0.2);
+}
+
+        </style>
+    </head>
+    <body>
+        <div id="intro">
+            <h1>METAWORLD</h1>
+            <p>Please enter username:</p>
+            <div>
+                <input id="Username" type="text" placeholder="Username"></input>
+                <input type="button" value="Enter" onclick="init()"></input>
+            </div>
+        </div>
+        <div id="metaworld-render">
+            <div id="grabber">
+                <div id="instruction">
+                    <h1>Click to grab the mouse</h1>
+                    <h2>Esc to release after</h1>
+                </div>
+            </div>
+            <div id="position">
+                position
+            </div>
+            <div id="fps">
+                fps
+            </div>
+            <div id="server">
+                disconnected
+            </div>
+        </div>
+    </body>
 </html>

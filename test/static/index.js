@@ -80,6 +80,7 @@ function buildControls() {
     for (let i = 0; i < tmp.children.length; i++) {
       tmp.children[i].castShadow = true;
       tmp.children[i].receiveShadow = true;
+      tmp.children[i].material.wireframe = true;
     }
     gltf.scene.receiveShadow = true;
     gltf.scene.castShadow = true;

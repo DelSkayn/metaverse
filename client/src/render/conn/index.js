@@ -52,10 +52,11 @@ class RpcConnection extends EventEmitter {
 
 // Manages a connection to a server
 class ServerConnection {
-  constructor(server, controlsContext) {
+  constructor(server, controlsContext, userName) {
     this.server = server;
     this.connection = null;
     this.rpc = null;
+    this.userName = userName;
 
     this.loaded = false;
     this.connected = false;
@@ -66,6 +67,7 @@ class ServerConnection {
     this.module.context.url = this.server.addr;
     this._scene = new Scene(controlsContext);
     this.module.context.scene = this.scene;
+    this.module.context.userName = this.userName;
   }
 
   // Load a source file from the server;

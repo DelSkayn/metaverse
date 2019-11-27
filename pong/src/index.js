@@ -13,8 +13,12 @@ let counter = 0;
 
 highscores = [
   {
-    name: "AAA",
-    score: "10"
+    name: "Sophie",
+    score: "5"
+  },
+  {
+    name: "Mees",
+    score: "2"
   }
 ];
 

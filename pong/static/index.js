@@ -38,14 +38,14 @@ scene.camera = camera;
 let pongControls = new Controls();
 console.log(pongControls);
 pongControls.on("action:forward", () => {
-  flipper1.position.add(new Vector3(0, 0.1, 0));
+  flipper1.position.add(new Vector3(0, 0.3, 0));
   if (flipper1.position.y > 10) {
     flipper1.position.setY(10);
   }
   // flipper up
 });
 pongControls.on("action:backward", () => {
-  flipper1.position.add(new Vector3(0, -0.1, 0));
+  flipper1.position.add(new Vector3(0, -0.3, 0));
   if (flipper1.position.y < -10) {
     flipper1.position.setY(-10);
   }
@@ -168,7 +168,7 @@ scene.bind(defaultControls);
           0
         );
         ball_direction.normalize();
-        ball_direction.multiplyScalar(0.1);
+        ball_direction.multiplyScalar(0.3);
       }
       ball.position.add(ball_direction);
       if (ball.position.y > 15) {
@@ -192,7 +192,7 @@ scene.bind(defaultControls);
       if (ball.position.x < -15) {
         ball.position.set(0, 0, 0);
         ball_direction = null;
-        RPC.remote.addHighscore("BBB", score).then(() => {
+        RPC.remote.addHighscore(userName, score).then(() => {
           updateHighScores(RPC);
         });
         reset();
