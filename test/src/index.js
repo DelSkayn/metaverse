@@ -11,25 +11,9 @@ const args = {
 
 let counter = 0;
 
-highscores = [
-  {
-    name: "AAA",
-    score: "7000"
-  }
-];
-
 expo = {
-  getHighscores() {
-    return this.highscores;
-  },
-
-  addHighscore(name, score) {
-    highscores.push({ name, score });
-    highscores.sort((a, b) => {
-      if (a.score < b.score) return -1;
-      if (a.score > b.score) return 1;
-      return 0;
-    });
+  log(x) {
+    console.log(x);
   }
 };
 
@@ -38,6 +22,5 @@ server.start().catch(console.error);
 server.on("connection", connection => {
   console.log("recieved connection");
   let rpc = new Rpc(connection);
-  console.log(rpc);
   rpc.expo = expo;
 });

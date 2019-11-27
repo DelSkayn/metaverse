@@ -6,12 +6,17 @@ const { ControlsContext, Controls, BaseControls } = require("./controls");
 const { Vector3, Quaternion, Euler, Object3D } = require("three");
 const { Servers } = require("./servers");
 const { Camera } = require("./camera");
+const { Node } = require("./conn/node");
 
 let renderer;
 let servers;
 let mainCamera;
 let userName;
+let node;
+
 async function init() {
+  node = new Node();
+
   document.getElementById("intro").hidden = true;
   document.getElementById("intro").style.display = "none";
   userName = document.getElementById("Username").value;
@@ -30,7 +35,7 @@ async function init() {
   /// context for handleing controls
   const controlsContext = new ControlsContext(baseControls, renderer);
   /// all the servers
-  servers = new Servers(controlsContext, userName);
+  servers = new Servers(controlsContext, userName, node);
   /// I hate myself
   controlsContext.servers = servers;
 
@@ -56,6 +61,8 @@ async function init() {
     // Update camera position and rotation
     renderer.camera.quaternion.copy(mainCamera.rotation);
     renderer.camera.position.copy(mainCamera.position);
+
+    node.tick(mainCamera.position);
 
     if (shouldRender) {
       servers.render(renderer);

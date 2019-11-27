@@ -32,7 +32,12 @@ class RpcConnection extends EventEmitter {
     };
 
     this.ws.onmessage = m => {
-      this.emit("message", m.data);
+      const type = m.data.slice(0, 4);
+      if (type === "rpc:") {
+        this.emit("message", m.data.slice(4));
+      } else {
+        this.emit("idMessage", m.data.slice(4));
+      }
     };
 
     this.ws.onclose = () => {
@@ -42,7 +47,11 @@ class RpcConnection extends EventEmitter {
   }
 
   send(x) {
-    this.ws.send(x);
+    this.ws.send("rpc:" + x);
+  }
+
+  sendId(x) {
+    this.ws.send("con:" + x);
   }
 
   close() {
@@ -125,6 +134,14 @@ class ServerConnection {
         await wait(4000);
       }
     }
+  }
+
+  sendId(id) {
+    this.connection.sendId(id);
+  }
+
+  onId(x) {
+    this.connection.on("idMessage", x);
   }
 
   get scene() {

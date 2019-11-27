@@ -9,12 +9,24 @@ const Q = require("q");
 
 /// Wrapper around websocket implementations to allow rpc to use it.
 class Connection extends EventEmitter {
-  constructor(ws) {
+  constructor(ws, wss) {
     super();
     this.conn = ws;
+    this.server = wss;
     this.isConnected = true;
     this.conn.on("message", msg => {
-      this.emit("message", msg);
+      if (msg.slice(0, 4) == "rpc:") {
+        this.emit("message", msg.slice(4));
+      } else {
+        console.log(this.server.clients);
+        this.server.clients.forEach(x => {
+          console.log("SEND");
+          if (x.readyState === ws.OPEN && x !== this.conn) {
+            console.log("SEND!!");
+            x.send(msg);
+          }
+        });
+      }
     });
     this.conn.on("close", () => {
       this.emit("close");
@@ -22,7 +34,7 @@ class Connection extends EventEmitter {
   }
 
   send(x) {
-    this.conn.send(x);
+    this.conn.send("rpc:" + x);
   }
 }
 
@@ -50,9 +62,12 @@ class Server extends EventEmitter {
     if (opts.connection.enabled) {
       console.log("starting websocket server");
       this.wss = new WebSocket.Server({ noServer: true });
-      this.wss.on("connection", con => {
-        this.emit("connection", new Connection(con));
-      });
+      this.wss.on(
+        "connection",
+        (con => {
+          this.emit("connection", new Connection(con, this.wss));
+        }).bind(this)
+      );
     }
 
     const serve = serveStatic(opts.files.path, {

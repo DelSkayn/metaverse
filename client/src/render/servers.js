@@ -4,13 +4,14 @@ const { getServers } = require("./dss");
 
 /// Manages connections to servers servers
 class Servers {
-  constructor(controlsContext, userName) {
+  constructor(controlsContext, userName, node) {
     this.controlsContext = controlsContext;
     this._currentChunk = new Vector3();
     this._connections = [];
     this._current = null;
     this._shouldConnect = null;
     this._username = userName;
+    this._node = node;
   }
 
   async load(mainCamera) {
@@ -34,6 +35,14 @@ class Servers {
             if (x.server.isWithin(mainCamera.position)) {
               this._current = x;
               await this._current.connect();
+              this._current.onId(
+                (x => {
+                  console.log(x);
+                  this._node.addConnection(x);
+                }).bind(this)
+              );
+              console.log("HASDHA");
+              this._current.sendId(this._node.peer.id);
             }
           })
           .catch(e => {
@@ -71,7 +80,17 @@ class Servers {
         if (this._current.scene.camera) {
           this._current.scene.camera.copy(mainCamera);
         }
-        this._current.connect();
+        this._current.connect().then(
+          (() => {
+            this._current.onId(
+              (x => {
+                console.log(x);
+                this._node.addConnection(x);
+              }).bind(this)
+            );
+            this._current.sendId(this._node.peer.id);
+          }).bind(this)
+        );
       }
     });
   }

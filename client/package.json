@@ -12,6 +12,7 @@
     "electron": "^7.0.0",
     "electron-reload": "^1.5.0",
     "metaverse-common": "../common",
+    "peerjs": "^1.1.0",
     "three": "^0.110.0",
     "three-gltf-loader": "^1.110.0"
   },
