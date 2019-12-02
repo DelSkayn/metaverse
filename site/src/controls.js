@@ -1,14 +1,28 @@
-const { Vector3, Vector2, Euler } = require("three");
-const { EventEmitter } = require("metaverse-common");
 const _ = require("lodash");
+const { EventEmitter } = require("metaverse-common");
 
-// Handles binding controls and locking the mouse on the screen
-class ControlsContext extends EventEmitter {
-  constructor(defaultControls, renderer, servers) {
-    super();
-    this.isLocked = false;
-    this.servers = servers;
+// The problem with controls arises from the following requirements:
+//      A. Any event for a key which is not bound as part of the
+//         controls should be able to be handled by a different binding
+//
+//      B. Controls should communicate across a channel
+//
+//      C. Controls should be responsive and be able to be handled immediatly.
+//
+// A is required for allowing smooth movement through servers which do not handle controls.
+// B is required because the servers run on webworkers
+// C is required for user experience.
+//
+// Current solution:
+//    Both the binding and the manager keep track of which controls are bound.
+//    When a key (or mouse) is bound in the controls the control sends a event to the control manager which the
+//    updates its information about the changed bindings.
+//    When a event is fired the control manager walks down the stack and finds the controls object which has bound
+//    the key and only sends the event to that binding.
 
+// Class which manage controls and pointer locking
+class ControlManager {
+  constructor(element) {
     document.addEventListener(
       "pointerlockchange",
       this._onPointerLockChange.bind(this),
@@ -19,316 +33,157 @@ class ControlsContext extends EventEmitter {
       this._onPointerLockError.bind(this),
       false
     );
-    document.addEventListener("keyup", this._onKeyUp.bind(this), false);
-    document.addEventListener("keydown", this._onKeyDown.bind(this), false);
+    document.addEventListener(
+      "keyup",
+      _bind(m => {
+        this._onKey(m, true);
+      }, this)
+    );
+    document.addEventListener(
+      "keydown",
+      _bind(m => {
+        this._onKey(m, true);
+      }, this)
+    );
     document.addEventListener("mousemove", this._onMouseMove.bind(this), false);
 
-    this.canvas = renderer.renderer.domElement;
-    this.stack = [defaultControls];
-    this.pressedKeys = {};
+    this._isLocked = false;
+    this._lockElement = element;
+    this._channels = [];
   }
 
-  // Add bindings to the control stack
-  bind(controls) {
-    this.stack[this.stack.length - 1].unbind();
-    this.stack.push(controls);
-    controls.emit("bound");
-    for (var key in this.pressedKeys) {
-      if (this.pressedKeys[key]) {
-        controls._handlePressed(key);
+  // Callback called when the special ESC key is pressed.
+  onQuit(cb) {
+    this._onQuit = cb;
+  }
+
+  _handleMessage(channelData, msg) {
+    if (msg.even == "bindKey") {
+      if (!msg.key in channelData.keyBindings) {
+        channelData.keyBindings.push(msg.key);
       }
     }
-  }
-
-  // remove bindings from the control stack
-  unbind(controls) {
-    let shouldEmit = false;
-    if (this.stack[this.stack.length - 1] == controls) {
-      shouldEmit = true;
+    if (msg.event == "unbindKey") {
+      _.remove(channelData.keyBindings, x => x == msg.key);
     }
-    _.remove(this.stack, x => x == controls);
-    controls.unbind();
-    if (shouldEmit) {
-      let controls = this.stack[this.stack.length - 1];
-      controls.emit("bound");
-      for (var key in this.pressedKeys) {
-        if (this.pressedKeys[key]) {
-          controls._handlePressed(key);
-        }
-      }
+    if (msg.event == "bindMouse") {
+      channelData.mouse = true;
+    }
+    if (msg.event == "unbindMouse") {
+      channelData.mouse = false;
     }
   }
 
-  _onKeyDown(e) {
-    if (e.Handled) {
+  _onKey(e, isUp) {
+    // Ignore already handled events.
+    if (e.handled) {
       return;
     }
-    e.Handled = true;
-    if (!this.isLocked) {
+    e.handled = true;
+    // Dont handle events if the screen is locked.
+    if (!this._isLocked) {
       return;
-    } else {
-      // the ESC key zorgt altijd voor een screen unlock
-      if (e.keyCode == 27) {
-        if (this.servers.current) {
-          this.servers.release();
-        } else {
-          this.unlock();
-        }
+    }
+
+    // Esc key should never be able to be bound over
+    if (isUp && e.keyCode == 27) {
+      if (this.onQuit) {
+        this.onQuit();
       }
     }
-    this.pressedKeys[e.code] = true;
-    let current = this.stack.length - 1;
-    while (current >= 0) {
-      const controls = this.stack[current];
-      if (controls._handlePressed(e.code)) {
+    // for all channels
+    for (let i = this._channels.length - 1; i >= 0; i--) {
+      const chan = this._channels[i];
+      if (e.code in chan.keyBindings) {
+        const event = isUp ? "keyUp" : "keyDown";
+        chan.channel.emit("controls", {
+          event,
+          key: e.code
+        });
         break;
       }
-      current -= 1;
-    }
-  }
-
-  _onKeyUp(e) {
-    if (e.Handled) {
-      return;
-    }
-    e.Handled = true;
-    if (!this.isLocked) {
-      return;
-    } else {
-      // the ESC key zorgt altijd voor een screen unlock
-      // so key up should not fire since keydown did not.
-      if (e.keyCode == 27) {
-        return;
-      }
-    }
-    this.pressedKeys[e.code] = false;
-    let current = this.stack.length - 1;
-    while (current >= 0) {
-      const controls = this.stack[current];
-      if (controls._handleReleased(e.code)) {
-        break;
-      }
-      current -= 1;
     }
   }
 
   _onMouseMove(e) {
+    if (e.handled) {
+      return;
+    }
+    e.handled = true;
     if (!this.isLocked) {
       return;
     }
-    if (this.stack.length > 0) {
-      const controls = this.stack[this.stack.length - 1];
-      controls._handleMouseDelta(e);
+    for (let i = this._channels.length - 1; i >= 0; i--) {
+      const chan = this._channels[i];
+      if (chan.mouse) {
+        chan.channel.emit("controls", {
+          event: "mouseMove",
+          e
+        });
+        break;
+      }
     }
   }
 
-  _onPointerLockError(e) {
-    this.emit("error", e);
+  addControlChannel(channel) {
+    const data = {
+      channel,
+      keyBindings: [],
+      mouse: false
+    };
+    this._channels.push(data);
+    const cb = _.bind(m => {
+      this._handleMessage(data, m);
+    }, this);
+    channel.on("controls", cb);
+    data.cb = cb;
   }
 
-  _onPointerLockChange() {
-    if (document.pointerLockElement === this.canvas) {
-      this.emit("lock");
-      this.isLocked = true;
-    } else {
-      document.removeEventListener(
-        "mousemove",
-        this._onMouseMove.bind(this),
-        false
-      );
-      this.emit("unlock");
-      this.isLocked = false;
-    }
+  removeControlChannel(channel) {
+    const removed = _.remove(this._channels, x => x == channel);
+    removed.forEach(x => {
+      x.channel.remove("controls", x.cb);
+      x.cb = null;
+    });
+  }
+}
+
+// A channel for when controls are not behind a channel like with the default controls.
+class ControlsChannel extends EventEmitter {
+  constructor() {
+    super();
+    this._other = null;
+    this._emit = super.emit();
   }
 
-  /// Lock the screen so that mouse movement may be captured
-  lock() {
-    this.canvas.requestPointerLock();
+  emit(name, data) {
+    this._other._emit(name, data);
   }
 
-  /// Lock the screen so that mouse movement may be captured
-  unlock() {
-    document.exitPointerLock();
+  static create() {
+    const first = new ControlsChannel();
+    const second = new ControlsChannel();
+    return { first, second };
   }
 }
 
 const DEFAULT_BINDINGS = {
-  actions: {
-    KeyA: "left",
-    KeyW: "forward",
-    KeyS: "backward",
-    KeyD: "right",
-    KeyQ: "up",
-    KeyE: "down",
-    ArrowLeft: "left",
-    ArrowUp: "forward",
-    ArrowDown: "backward",
-    ArrowRight: "right"
+  axis: {
+    horizontal: {
+      KeyA: -1,
+      KeyD: 1
+    },
+    forward: {
+      KeyW: 1,
+      KeyS: -1
+    },
+    vertical: {
+      KeyQ: 1,
+      KeyE: -1
+    }
   }
 };
 
-class Controls extends EventEmitter {
-  constructor(bindings) {
-    super();
-    if (!bindings) {
-      bindings = DEFAULT_BINDINGS;
-    }
-    this.bindings = bindings;
-    if (!this.bindings.actions) {
-      this.bindings.actions = {};
-    }
-    if (!this.bindings.triggers) {
-      this.bindings.triggers = {};
-    }
-    this.delta = new Vector2();
-    this.context = {
-      actions: {},
-      triggers: {}
-    };
-  }
-
-  /// Bind a certain key to a certain event.
-  action(keyCode, name) {
-    this.bindings.actions[keyCode] = {
-      name
-    };
-  }
-
-  trigger(keyCode, name, keyDown) {
-    this.bindings.triggers[keyCode] = {
-      keyDown,
-      name
-    };
-  }
-
-  // Handle a key press. If no action is bound return false
-  // else return true
-  _handlePressed(keycode) {
-    console.log(keycode);
-    let res = false;
-    if (this.bindings.actions[keycode]) {
-      const name = this.bindings.actions[keycode];
-      this.context.actions[name] = true;
-      res = true;
-    }
-
-    if (
-      this.bindings.triggers[keycode] &&
-      this.bindings.triggers[keycode].keyDown
-    ) {
-      res = true;
-      const name = this.bindings.triggers[keycode].name;
-      this.context.triggers[name] = true;
-    }
-
-    return res;
-  }
-
-  // Handle a key press. If no action is bound return false
-  // else return true
-  _handleReleased(keycode) {
-    if (this.bindings.actions[keycode]) {
-      const name = this.bindings.actions[keycode];
-      this.context.actions[name] = false;
-      return true;
-    }
-    if (
-      this.bindings.triggers[keycode] &&
-      !this.bindings.triggers[keycode].keyDown
-    ) {
-      res = true;
-
-      this.context.triggers[keycode] = true;
-    }
-    return false;
-  }
-
-  _handleMouseDelta(delta) {
-    let vec = { x: delta.movementX, y: delta.movementY };
-    this.delta.add(vec);
-  }
-
-  unbind() {
-    for (let cont in this.context.actions) {
-      this.context.actions[cont] = false;
-    }
-    for (let cont in this.context.triggers) {
-      this.context.triggers[cont] = false;
-    }
-    this.emit("unbound");
-  }
-
-  //Fire any events handling active actions.
-  tick() {
-    if (!(this.delta.x === 0 && this.delta.y === 0)) {
-      this.emit("mousemove", this.delta);
-    }
-    this.delta = new Vector2();
-    for (let v in this.context.actions) {
-      if (this.context.actions[v]) {
-        this.emit("action:" + v);
-      }
-    }
-    for (let v in this.context.triggers) {
-      if (this.context.triggers[v]) {
-        this.emit("trigger:" + v);
-        this.context.triggers[v] = false;
-      }
-    }
-  }
-}
-
-class BaseControls extends Controls {
-  constructor(bindings, camera) {
-    super(bindings);
-    this._camera = camera;
-    this.on("action:left", () => {
-      const other_vec = new Vector3(-1, 0, 0);
-      other_vec.applyQuaternion(this._camera.rotation);
-      this._camera.position.addScaledVector(other_vec, 0.1);
-    });
-    this.on("action:right", () => {
-      const other_vec = new Vector3(1, 0, 0);
-      other_vec.applyQuaternion(this._camera.rotation);
-      this._camera.position.addScaledVector(other_vec, 0.1);
-    });
-    this.on("action:forward", () => {
-      const other_vec = new Vector3(0, 0, -1);
-      other_vec.applyQuaternion(this._camera.rotation);
-      this._camera.position.addScaledVector(other_vec, 0.1);
-    });
-    this.on("action:backward", () => {
-      const other_vec = new Vector3(0, 0, 1);
-      other_vec.applyQuaternion(this._camera.rotation);
-      this._camera.position.addScaledVector(other_vec, 0.1);
-    });
-    this.on("action:up", () => {
-      this._camera.position.addScaledVector(new Vector3(0, 1, 0), 0.1);
-    });
-    this.on("action:down", () => {
-      this._camera.position.addScaledVector(new Vector3(0, -1, 0), 0.1);
-    });
-    this.on(
-      "mousemove",
-      (x => {
-        let euler = new Euler(0, 0, 0, "YXZ");
-        euler.setFromQuaternion(this._camera.rotation);
-        euler.y -= x.x * 0.004;
-        euler.x -= x.y * 0.004;
-        if (euler.x > Math.PI * 0.5) {
-          euler.x = Math.PI * 0.5;
-        }
-        if (euler.x < Math.PI * -0.5) {
-          euler.x = Math.PI * -0.5;
-        }
-        this._camera.rotation.setFromEuler(euler);
-      }).bind(this)
-    );
-  }
-}
-
-module.exports = {
-  ControlsContext,
-  Controls,
-  BaseControls
-};
+// Class which manages responses to control events.
+// Expects a EventEmitter as a argument during construction
+// Also expects binding mapping keys to axis and

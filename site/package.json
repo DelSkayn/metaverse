@@ -4,9 +4,11 @@
   "main": "src/index.js",
   "license": "MIT",
   "scripts": {
-      "build": "browserify src/render.js -o dist/render.js"
+      "dev": "budo src/index.js --dir dist --live --open",
+    "build": "browserify src/render.js -o dist/render.js"
   },
   "dependencies": {
+    "immer": "^5.0.0",
     "metaverse-common": "../common",
     "peerjs": "../peerjs/",
     "three": "^0.111.0",
@@ -14,7 +16,7 @@
     "webworkify": "^1.5.0"
   },
   "devDependencies": {
-    "budo": "^11.6.3",
-    "browserify": "^16.5.0"
+    "browserify": "^16.5.0",
+    "budo": "^11.6.3"
   }
 }

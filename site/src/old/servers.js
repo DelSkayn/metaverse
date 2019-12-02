@@ -1,6 +1,7 @@
 const { Vector3 } = require("three");
 const { ServerConnection } = require("./conn");
 const { getServers } = require("./dss");
+const Q = require("q");
 
 /// Manages connections to servers servers
 class Servers {
@@ -41,7 +42,6 @@ class Servers {
                   this._node.addConnection(x);
                 }).bind(this)
               );
-              console.log("HASDHA");
               this._current.sendId(this._node.peer.id);
             }
           })
@@ -77,8 +77,10 @@ class Servers {
     this._connections.forEach(x => {
       if (x.server.isWithin(this._currentChunk)) {
         this._current = x;
-        if (this._current.scene.camera) {
-          this._current.scene.camera.copy(mainCamera);
+        if (this._current.module.camera) {
+          this._current.mutCamera(x => {
+            x.copy(mainCamera);
+          });
         }
         this._current.connect().then(
           (() => {
@@ -96,14 +98,16 @@ class Servers {
   }
 
   /// Update the current server
-  tick(mainCamera) {
+  async tick(mainCamera) {
     if (this.current) {
-      const scene = this.current.scene;
-      if (scene.camera) {
-        scene.camera.copy(mainCamera);
+      const module = this.current.module;
+      if (module.camera) {
+        module.mutCamera(x => {
+          x.copy(mainCamera);
+        });
       }
-      scene.tick();
-      if (scene.camera) {
+      this.current.tick();
+      if (module.camera) {
         mainCamera.copy(scene.camera);
       }
     }
@@ -111,14 +115,14 @@ class Servers {
 
   render(renderer) {
     for (let i = 0; i < this.all.length; i++) {
-      if (this.all[i].scene.root) {
-        renderer.roots.add(this.all[i].scene.root);
+      if (this.all[i].scene) {
+        renderer.roots.add(this.all[i].scene);
       }
     }
     renderer.render();
     for (let i = 0; i < this.all.length; i++) {
-      if (this.all[i].scene.root) {
-        renderer.roots.remove(this.all[i].scene.root);
+      if (this.all[i].scene) {
+        renderer.roots.remove(this.all[i].scene);
       }
     }
   }

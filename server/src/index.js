@@ -5,6 +5,8 @@ const url = require("url");
 const serveStatic = require("serve-static");
 const { Rpc, EventEmitter } = require("metaverse-common");
 const defaultsDeep = require("@nodeutils/defaults-deep");
+const cors = require("cors")();
+const compress = require("compression");
 const Q = require("q");
 
 /// Wrapper around websocket implementations to allow rpc to use it.
@@ -75,7 +77,7 @@ class Server extends EventEmitter {
     });
 
     this.server = polka();
-    this.server.use(serve);
+    this.server.use(cors, serve);
   }
 
   async start() {

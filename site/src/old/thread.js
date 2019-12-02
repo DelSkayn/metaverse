@@ -2,14 +2,9 @@ const work = require("webworkify");
 const { EventEmitter } = require("metaverse-common");
 const immer = require("immer");
 
-// A class which manages the syncronization of objects over a channel via patches.
-// # Events
-// - Value Name: Emitted when a value with that name recieved a change from a remote source. Value passed to arguments.
-class Patch extends EventEmitter {
+class Patch {
   constructor(channel) {
-    super();
     this._state = {};
-    this._callbacks = {};
     this._channel = channel;
     this._onChange = null;
     channel.on("patch", this._patch.bind(this));
@@ -23,11 +18,17 @@ class Patch extends EventEmitter {
       this._state[data.name],
       data.patch
     );
-    this.emit(data.name, this._state[name]);
+    if (this._onChange) {
+      this._onChange(data.name, this._state[data.name]);
+    }
   }
 
   get(name) {
     return this._state[name];
+  }
+
+  onChange(cb) {
+    this._onChange = cb;
   }
 
   mut(name, cb) {
@@ -47,8 +48,7 @@ class Thread extends EventEmitter {
   constructor() {
     super();
     this._worker = work(require("./worker.js"));
-    this._worker.addEventListener("message", this._handleMessage.bind(this));
-    this._emit = super.emit.bind(this);
+    this._worker.addEventListener("message", this._handleMessage);
   }
 
   run(fn) {
@@ -60,9 +60,7 @@ class Thread extends EventEmitter {
   }
 
   _handleMessage(msg) {
-    console.log(msg);
-    console.log(this);
-    this._emit(msg.data.name, msg.data.data);
+    super.emit(msg.data.name, msg.data.data);
   }
 
   emit(name, data) {

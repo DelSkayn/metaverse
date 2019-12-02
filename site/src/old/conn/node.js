@@ -57,7 +57,6 @@ class Node extends EventEmitter {
       this.position.copy(position);
     }
     if (!position.equals(this.position)) {
-      console.log("HJASDHJASJKDHAKSDJHAS");
       this.position.copy(position);
       this.connections.forEach(x => {
         x.conn.send(JSON.stringify(this.position));

@@ -1,4 +1,5 @@
 const { Euler, Vector3 } = THREE;
+console.log("HALLO!!!");
 
 function buildControls() {
   console.log("bla");
@@ -46,16 +47,17 @@ function buildControls() {
 }
 
 (async () => {
-  const controls = buildControls();
-  scene.bind(controls);
-  console.log(scene);
+  /*
+  //const controls = buildControls();
+  //scene.bind(controls);
+  //console.log(scene);
   const chunks = [
     { x: 0, y: 0, z: 0 },
     { x: 1, y: 0, z: 0 },
     { x: 0, y: 1, z: 0 },
     { x: 1, y: 1, z: 0 }
   ];
-  scene.camera = new Camera();
+  //scene.camera = new Camera();
   scene.on("connect", async rpc => {
     console.log("recieved connection to server!");
     await rpc.remote.log("Hallo from the client!");
@@ -68,31 +70,45 @@ function buildControls() {
   scene.on("tick", () => {
     controls.tick();
   });
+  */
 
-  const three = scene.three;
-  console.log(three);
-  var loader = new three.GLTFLoader();
+  const manager = new THREE.LoadingManager();
+  let loader = new GLTFLoader(manager);
+  manager.addHandler(/\.(jpeg|jpg|png)$/, new THREE.ImageBitmapLoader());
 
-  loader.load("http://" + url + "/res/sponza/Sponza.glb", gltf => {
-    const tmp = gltf.scene.children[0];
-    tmp.castShadow = true;
-    tmp.receiveShadow = true;
-    for (let i = 0; i < tmp.children.length; i++) {
-      tmp.children[i].castShadow = true;
-      tmp.children[i].receiveShadow = true;
-      tmp.children[i].material.wireframe = true;
-    }
-    gltf.scene.receiveShadow = true;
-    gltf.scene.castShadow = true;
-    scene.root = gltf.scene;
-    scene.root.position.set(0, 0.01, -3);
-    console.log(gltf);
-    loader.load("http://" + url + "/res/DamagedHelmet.gltf", gltf => {
+  loader.load(
+    "http://" + url + "/res/sponza/Sponza.glb",
+    gltf => {
+      const tmp = gltf.scene.children[0];
+      tmp.castShadow = true;
+      tmp.receiveShadow = true;
+      for (let i = 0; i < tmp.children.length; i++) {
+        tmp.children[i].castShadow = true;
+        tmp.children[i].receiveShadow = true;
+        tmp.children[i].material.wireframe = true;
+      }
+      gltf.scene.receiveShadow = true;
+      gltf.scene.castShadow = true;
+      gltf.scene.position.set(0, 0.01, -3);
+      scene.updateScene(root => {
+        debugger;
+        return gltf.scene;
+      });
       console.log(gltf);
-      gltf.scene.children[0].receiveShadow = true;
-      gltf.scene.position.setY(3);
-      gltf.scene.position.setX(30);
-      scene.root.add(gltf.scene);
-    });
-  });
+      loader.load("http://" + url + "/res/DamagedHelmet.gltf", gltf => {
+        gltf.scene.children[0].receiveShadow = true;
+        gltf.scene.position.setY(3);
+        gltf.scene.position.setX(30);
+        scene.updateScene(root => {
+          root.add(gltf.scene);
+          return root;
+        });
+      });
+    },
+    null,
+    x => {
+      console.error(x);
+      debugger;
+    }
+  );
 })();

@@ -2,7 +2,6 @@ const { Rpc, EventEmitter } = require("metaverse-common");
 const { Scene } = require("./scene");
 const { Module } = require("./mod");
 const THREE = require("three");
-const GLTFLoader = require("three-gltf-loader");
 
 class ConnectionStopped extends Error {
   constructor() {
@@ -61,7 +60,7 @@ class RpcConnection extends EventEmitter {
 
 // Manages a connection to a server
 class ServerConnection {
-  constructor(server, controlsContext, userName) {
+  constructor(server, userName) {
     this.server = server;
     this.connection = null;
     this.rpc = null;
@@ -72,11 +71,7 @@ class ServerConnection {
     this.shouldConnect = false;
     this.connectionPromise = null;
 
-    this.module = new Module();
-    this.module.context.url = this.server.addr;
-    this._scene = new Scene(controlsContext);
-    this.module.context.scene = this.scene;
-    this.module.context.userName = this.userName;
+    this._module = new Module();
   }
 
   // Load a source file from the server;
@@ -84,12 +79,19 @@ class ServerConnection {
     if (this.loaded) {
       return;
     }
+    console.log(this);
     console.log("loading server: ", this.server.addr);
     let req = await fetch("http://" + this.server.addr);
     let text = await req.text();
-    this.module.context.scene.three = THREE;
-    this.module.context.scene.three.GLTFLoader = GLTFLoader;
-    this.module.addScript(text);
+    console.log("addScript");
+    this._module.mutValue(
+      "url",
+      (x => {
+        x = this.server.addr;
+      }).bind(this)
+    );
+    this._module.addScript(text);
+    console.log("done");
     this.loaded = true;
   }
 
@@ -105,35 +107,8 @@ class ServerConnection {
   }
 
   async _connect() {
-    while (this.shouldConnect) {
-      try {
-        /// Create a rpc connection
-        const connection = new RpcConnection(this.server.addr + "/meta/ws");
-        const rpc = new Rpc(connection);
-
-        /// Setup promises
-        let d = Q.defer();
-
-        connection.once("open", true).then(d.resolve);
-        connection.once("error", true).then(d.reject);
-        await d.promise;
-        connection.once("close", true).then(this._close.bind(this));
-
-        this.connection = connection;
-        this.rpc = rpc;
-        this.scene.connect(this.rpc);
-        this.connectionPromise = null;
-        this.connected = true;
-        return;
-      } catch (e) {
-        if (e instanceof ConnectionStopped) {
-          return;
-        }
-        throw e;
-        console.warn("error while trying to connect: ", e);
-        await wait(4000);
-      }
-    }
+    this.connected = true;
+    this._module.emit("connect");
   }
 
   sendId(id) {
@@ -144,8 +119,15 @@ class ServerConnection {
     this.connection.on("idMessage", x);
   }
 
-  get scene() {
-    return this._scene;
+  async tick() {
+    if (!this.loaded) {
+      return;
+    }
+    await this.module.tick();
+  }
+
+  get module() {
+    return this._module;
   }
 
   _close() {

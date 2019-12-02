@@ -166,7 +166,6 @@ class Renderer {
       (() => {
         this.camera.aspect = window.innerWidth / window.innerHeight;
         this.camera.updateProjectionMatrix();
-
         this.renderer.setSize(window.innerWidth, window.innerHeight);
       }).bind(this),
       false
@@ -205,7 +204,7 @@ class Renderer {
       scene.remove(this.chunkObject);
     }
     this.chunksCache = servers;
-    this.chunkObject = new Object3D();
+    this.chunkObject = new THREE.Object3D();
     servers.forEach(x => {
       let vertexColor = fnv(x.addr);
       vertexColor >>> 8;

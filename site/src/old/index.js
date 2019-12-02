@@ -1,5 +1,6 @@
 const Q = require("q");
 const { ServerConnection } = require("./conn");
+const { EventEmitter } = require("metaverse-common");
 const { getServers } = require("./dss");
 const { Renderer, ControlsLock } = require("./renderer");
 const { ControlsContext, Controls, BaseControls } = require("./controls");
@@ -7,8 +8,6 @@ const { Vector3, Quaternion, Euler, Object3D } = require("three");
 const { Servers } = require("./servers");
 const { Camera } = require("./camera");
 const { Node } = require("./conn/node");
-const { Thread } = require("./thread");
-const THREE = require("three");
 
 let renderer;
 let servers;
@@ -19,14 +18,20 @@ let node;
 async function init() {
   node = new Node();
 
+  // Hide intro and show renderer
   document.getElementById("intro").hidden = true;
   document.getElementById("intro").style.display = "none";
-  userName = document.getElementById("Username").value;
   document.getElementById("metaworld-render").style.display = "block";
-  /// the position of client and its rotation
+
+  // Set the username
+  userName = document.getElementById("Username").value;
+
+  // setup camera
   mainCamera = new Camera();
-  // the render engine
-  const baseControls = new BaseControls(null, mainCamera);
+
+  // setup controls
+  const controlsChannel = new EventEmitter();
+  const baseControls = new BaseControls(null, controlsChannel, mainCamera);
   baseControls.trigger("KeyC", "render_chunks", true);
 
   renderer = new Renderer();
@@ -34,9 +39,10 @@ async function init() {
   baseControls.on("trigger:render_chunks", () => {
     renderer.renderChunks = !renderer.renderChunks;
   });
-  /// context for handleing controls
-  const controlsContext = new ControlsContext(baseControls, renderer);
-  /// all the servers
+  const controlsContext = new ControlsContext(
+    controlsChannel,
+    renderer.renderer.domElement
+  );
   servers = new Servers(controlsContext, userName, node);
   /// I hate myself
   controlsContext.servers = servers;
@@ -47,7 +53,7 @@ async function init() {
 
   let frames = 0;
 
-  function mainLoop() {
+  async function mainLoop() {
     frames += 1;
     // Run the base controlls bindings.
     servers.updatePosition(mainCamera);
@@ -58,7 +64,7 @@ async function init() {
     }
 
     // update the scene of the connected server.
-    servers.tick(mainCamera);
+    await servers.tick(mainCamera);
 
     // Update camera position and rotation
     renderer.camera.quaternion.copy(mainCamera.rotation);
@@ -122,6 +128,7 @@ async function init() {
   /// Setup control grabber
   const grabber = document.getElementById("grabber");
   grabber.addEventListener("click", () => {
+    console.log("hallow!");
     controlsContext.lock();
   });
 
@@ -144,6 +151,8 @@ async function init() {
   mainLoop();
   shouldRender = false;
 }
+
+window.init = init;
 
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("Enter").onclick = init;

@@ -1,8 +1,8 @@
 Arguments: 
-  /usr/bin/node /usr/bin/yarn upgrade --ofiline
+  /usr/bin/node /bin/yarn add --dev nodemon
 
 PATH: 
-  /home/delskayn/.yarn/bin:/home/delskayn/.local/env/py3/bin:/home/delskayn/.local/env/py2/bin:/home/delskayn/.fzf/bin:/home/delskayn/.yarn/bin:/home/delskayn/.local/env/py3/bin:/home/delskayn/.local/env/py2/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/home/delskayn/.cargo/bin:/home/delskayn/.cargo/bin
+  /home/mees/.local/env/py3/bin:/home/mees/.local/env/py2/bin:/home/mees/.local/env/py3/bin:/home/mees/.local/env/py2/bin:/bin:/usr/bin:/usr/local/bin:/usr/local/sbin:/opt/cuda/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/home/mees/.cargo/bin:/home/mees/.yarn/bin:/home/mees/.local/bin:/home/mees/.cargo/bin:/home/mees/.yarn/bin:/home/mees/.local/bin
 
 Yarn version: 
   1.19.1
@@ -14,13 +14,18 @@ Platform:
   linux x64
 
 Trace: 
-  Error: getaddrinfo EAI_AGAIN registry.yarnpkg.com
-      at GetAddrInfoReqWrap.onlookup [as oncomplete] (dns.js:60:26)
+  SyntaxError: /home/mees/Documents/programming/javascript/metaverse/test/package.json: Unexpected string in JSON at position 51
+      at JSON.parse (<anonymous>)
+      at /usr/lib/node_modules/yarn/lib/cli.js:1625:59
+      at Generator.next (<anonymous>)
+      at step (/usr/lib/node_modules/yarn/lib/cli.js:304:30)
+      at /usr/lib/node_modules/yarn/lib/cli.js:315:13
 
 npm manifest: 
   {
       "scripts": {
           "run": "node ."
+          "dev": "nodemon ."
       },
       "name": "metaverse_test",
       "version": "1.0.0",
@@ -28,7 +33,8 @@ npm manifest:
       "license": "MIT",
       "dependencies": {
           "chokidar": "^3.2.2",
-          "metaverse-server": "file:../server"
+          "metaverse-common": "../common/",
+          "metaverse-server": "../server"
       }
   }
 
@@ -57,6 +63,14 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/@polka/url/-/url-0.5.0.tgz#b21510597fd601e5d7c95008b76bf0d254ebfd31"
     integrity sha512-oZLYFEAzUKyi3SKnXvj32ZCEGH6RDnao7COuCVhDydMS9NrCSVXhM79VaKyP5+Zc33m0QXEd2DN3UkU7OsHcfw==
   
+  accepts@~1.3.5:
+    version "1.3.7"
+    resolved "https://registry.yarnpkg.com/accepts/-/accepts-1.3.7.tgz#531bc726517a3b2b41f850021c6cc15eaab507cd"
+    integrity sha512-Il80Qs2WjYlJIBNzNkK6KYqlVMTbZLXgHx2oT0pU/fjRHyEp+PEfEPY0R3WCwAGVOtauxh1hOxNgIf5bv7dQpA==
+    dependencies:
+      mime-types "~2.1.24"
+      negotiator "0.6.2"
+  
   anymatch@~3.1.1:
     version "3.1.1"
     resolved "https://registry.yarnpkg.com/anymatch/-/anymatch-3.1.1.tgz#c55ecf02185e2469259399310c173ce31233b142"
@@ -75,12 +89,38 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/binary-extensions/-/binary-extensions-2.0.0.tgz#23c0df14f6a88077f5f986c0d167ec03c3d5537c"
     integrity sha512-Phlt0plgpIIBOGTT/ehfFnbNlfsDEiqmzE2KRXoX1bLIlir4X/MR+zSyBEkL05ffWgnRSf/DXv+WrUAVr93/ow==
   
+  body-parser@^1.19.0:
+    version "1.19.0"
+    resolved "https://registry.yarnpkg.com/body-parser/-/body-parser-1.19.0.tgz#96b2709e57c9c4e09a6fd66a8fd979844f69f08a"
+    integrity sha512-dhEPs72UPbDnAQJ9ZKMNTP6ptJaionhP5cBb541nXPlW60Jepo9RV/a4fX4XWW9CuFNK22krhrj1+rgzifNCsw==
+    dependencies:
+      bytes "3.1.0"
+      content-type "~1.0.4"
+      debug "2.6.9"
+      depd "~1.1.2"
+      http-errors "1.7.2"
+      iconv-lite "0.4.24"
+      on-finished "~2.3.0"
+      qs "6.7.0"
+      raw-body "2.4.0"
+      type-is "~1.6.17"
+  
   braces@~3.0.2:
     version "3.0.2"
     resolved "https://registry.yarnpkg.com/braces/-/braces-3.0.2.tgz#3454e1a462ee8d599e236df336cd9ea4f8afe107"
     integrity sha512-b8um+L1RzM3WDSzvhm6gIz1yfTbBt6YTlcEKAvsmqCZZFw46z626lVj9j1yEPW33H5H+lBQpZMP1k8l+78Ha0A==
     dependencies:
       fill-range "^7.0.1"
+  
+  bytes@3.0.0:
+    version "3.0.0"
+    resolved "https://registry.yarnpkg.com/bytes/-/bytes-3.0.0.tgz#d32815404d689699f85a4ea4fa8755dd13a96048"
+    integrity sha1-0ygVQE1olpn4Wk6k+odV3ROpYEg=
+  
+  bytes@3.1.0:
+    version "3.1.0"
+    resolved "https://registry.yarnpkg.com/bytes/-/bytes-3.1.0.tgz#f6cf7933a360e0588fa9fde85651cdc7f805d1f6"
+    integrity sha512-zauLjrfCG+xvoyaqLoV8bLVXXNGC4JqlxFCutSDWA6fJrTo2ZuvLYTqZ7aHBLZSMOopbzwv8f+wZcVzfVTI2Dg==
   
   chokidar@^3.2.2:
     version "3.2.3"
@@ -96,6 +136,39 @@ Lockfile:
       readdirp "~3.2.0"
     optionalDependencies:
       fsevents "~2.1.1"
+  
+  compressible@~2.0.16:
+    version "2.0.17"
+    resolved "https://registry.yarnpkg.com/compressible/-/compressible-2.0.17.tgz#6e8c108a16ad58384a977f3a482ca20bff2f38c1"
+    integrity sha512-BGHeLCK1GV7j1bSmQQAi26X+GgWcTjLr/0tzSvMCl3LH1w1IJ4PFSPoV5316b30cneTziC+B1a+3OjoSUcQYmw==
+    dependencies:
+      mime-db ">= 1.40.0 < 2"
+  
+  compression@^1.7.4:
+    version "1.7.4"
+    resolved "https://registry.yarnpkg.com/compression/-/compression-1.7.4.tgz#95523eff170ca57c29a0ca41e6fe131f41e5bb8f"
+    integrity sha512-jaSIDzP9pZVS4ZfQ+TzvtiWhdpFhE2RDHz8QJkpX9SIpLq88VueF5jJw6t+6CUQcAoA6t+x89MLrWAqpfDE8iQ==
+    dependencies:
+      accepts "~1.3.5"
+      bytes "3.0.0"
+      compressible "~2.0.16"
+      debug "2.6.9"
+      on-headers "~1.0.2"
+      safe-buffer "5.1.2"
+      vary "~1.1.2"
+  
+  content-type@~1.0.4:
+    version "1.0.4"
+    resolved "https://registry.yarnpkg.com/content-type/-/content-type-1.0.4.tgz#e138cc75e040c727b1966fe5e5f8c9aee256fe3b"
+    integrity sha512-hIP3EEPs8tB9AT1L+NUqtwOAps4mk2Zob89MWXMHjHWg9milF/j4osnnQLXBCBFBk/tvIG/tUc9mOUJiPBhPXA==
+  
+  cors@^2.8.5:
+    version "2.8.5"
+    resolved "https://registry.yarnpkg.com/cors/-/cors-2.8.5.tgz#eac11da51592dd86b9f06f6e7ac293b3df875d29"
+    integrity sha512-KIHbLJqu73RGr/hnbrO9uBeixNGuvSQjul/jdFvS/KFSIH1hWVd1ng7zOHx+YrEfInLG7q4n6GHQ9cDtxv/P6g==
+    dependencies:
+      object-assign "^4"
+      vary "^1"
   
   debug@2.6.9:
     version "2.6.9"
@@ -158,6 +231,17 @@ Lockfile:
     dependencies:
       is-glob "^4.0.1"
   
+  http-errors@1.7.2:
+    version "1.7.2"
+    resolved "https://registry.yarnpkg.com/http-errors/-/http-errors-1.7.2.tgz#4f5029cf13239f31036e5b2e55292bcfbcc85c8f"
+    integrity sha512-uUQBt3H/cSIVfch6i1EuPNy/YsRSOUBXTVfZ+yR7Zjez3qjBz6i9+i4zjNaoqcoFVI4lQJ5plg63TvGfRSDCRg==
+    dependencies:
+      depd "~1.1.2"
+      inherits "2.0.3"
+      setprototypeof "1.1.1"
+      statuses ">= 1.5.0 < 2"
+      toidentifier "1.0.0"
+  
   http-errors@~1.7.2:
     version "1.7.3"
     resolved "https://registry.yarnpkg.com/http-errors/-/http-errors-1.7.3.tgz#6c619e4f9c60308c38519498c14fbb10aacebb06"
@@ -168,6 +252,18 @@ Lockfile:
       setprototypeof "1.1.1"
       statuses ">= 1.5.0 < 2"
       toidentifier "1.0.0"
+  
+  iconv-lite@0.4.24:
+    version "0.4.24"
+    resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.24.tgz#2022b4b25fbddc21d2f524974a474aafe733908b"
+    integrity sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==
+    dependencies:
+      safer-buffer ">= 2.1.2 < 3"
+  
+  inherits@2.0.3:
+    version "2.0.3"
+    resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.3.tgz#633c2c83e3da42a502f52466022480f4208261de"
+    integrity sha1-Yzwsg+PaQqUC9SRmAiSA9CCCYd4=
   
   inherits@2.0.4:
     version "2.0.4"
@@ -210,21 +306,41 @@ Lockfile:
     dependencies:
       "@arr/every" "^1.0.0"
   
-  metaverse-common@../common:
+  media-typer@0.3.0:
+    version "0.3.0"
+    resolved "https://registry.yarnpkg.com/media-typer/-/media-typer-0.3.0.tgz#8710d7af0aa626f8fffa1ce00168545263255748"
+    integrity sha1-hxDXrwqmJvj/+hzgAWhUUmMlV0g=
+  
+  metaverse-common@../common/:
     version "1.0.0"
     dependencies:
       q "^1.5.1"
   
-  "metaverse-server@file:../server":
+  metaverse-server@../server:
     version "1.0.0"
     dependencies:
       "@nodeutils/defaults-deep" "^1.1.0"
+      body-parser "^1.19.0"
       chokidar "^3.2.2"
-      metaverse-common "../common"
+      compression "^1.7.4"
+      cors "^2.8.5"
+      metaverse-common "../common/"
       polka "^0.5.2"
       q "^1.5.1"
       serve-static "^1.14.1"
       ws "^7.1.2"
+  
+  mime-db@1.42.0, "mime-db@>= 1.40.0 < 2":
+    version "1.42.0"
+    resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.42.0.tgz#3e252907b4c7adb906597b4b65636272cf9e7bac"
+    integrity sha512-UbfJCR4UAVRNgMpfImz05smAXK7+c+ZntjaA26ANtkXLlOe947Aag5zdIcKQULAiF9Cq4WxBi9jUs5zkA84bYQ==
+  
+  mime-types@~2.1.24:
+    version "2.1.25"
+    resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.25.tgz#39772d46621f93e2a80a856c53b86a62156a6437"
+    integrity sha512-5KhStqB5xpTAeGqKBAMgwaYMnQik7teQN4IAzC7npDv6kzeU6prfkR67bc87J1kWMPGkoaZSq1npmexMgkmEVg==
+    dependencies:
+      mime-db "1.42.0"
   
   mime@1.6.0:
     version "1.6.0"
@@ -241,10 +357,20 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.1.tgz#30a5864eb3ebb0a66f2ebe6d727af06a09d86e0a"
     integrity sha512-tgp+dl5cGk28utYktBsrFqA7HKgrhgPsg6Z/EfhWI4gl1Hwq8B/GmY/0oXZ6nF8hDVesS/FpnYaD/kOWhYQvyg==
   
+  negotiator@0.6.2:
+    version "0.6.2"
+    resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.2.tgz#feacf7ccf525a77ae9634436a64883ffeca346fb"
+    integrity sha512-hZXc7K2e+PgeI1eDBe/10Ard4ekbfrrqG8Ep+8Jmf4JID2bNg7NvCPOZN+kfF574pFQI7mum2AUqDidoKqcTOw==
+  
   normalize-path@^3.0.0, normalize-path@~3.0.0:
     version "3.0.0"
     resolved "https://registry.yarnpkg.com/normalize-path/-/normalize-path-3.0.0.tgz#0dcd69ff23a1c9b11fd0978316644a0388216a65"
     integrity sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==
+  
+  object-assign@^4:
+    version "4.1.1"
+    resolved "https://registry.yarnpkg.com/object-assign/-/object-assign-4.1.1.tgz#2109adc7965887cfc05cbbd442cac8bfbb360863"
+    integrity sha1-IQmtx5ZYh8/AXLvUQsrIv7s2CGM=
   
   on-finished@~2.3.0:
     version "2.3.0"
@@ -252,6 +378,11 @@ Lockfile:
     integrity sha1-IPEzZIGwg811M3mSoWlxqi2QaUc=
     dependencies:
       ee-first "1.1.1"
+  
+  on-headers@~1.0.2:
+    version "1.0.2"
+    resolved "https://registry.yarnpkg.com/on-headers/-/on-headers-1.0.2.tgz#772b0ae6aaa525c399e489adfad90c403eb3c28f"
+    integrity sha512-pZAE+FJLoyITytdqK0U5s+FIpjN0JP3OzFi/u8Rx+EV5/W+JTWGXG8xFzevE7AjBfDqHv/8vL8qQsIhHnqRkrA==
   
   parseurl@~1.3.3:
     version "1.3.3"
@@ -276,10 +407,25 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/q/-/q-1.5.1.tgz#7e32f75b41381291d04611f1bf14109ac00651d7"
     integrity sha1-fjL3W0E4EpHQRhHxvxQQmsAGUdc=
   
+  qs@6.7.0:
+    version "6.7.0"
+    resolved "https://registry.yarnpkg.com/qs/-/qs-6.7.0.tgz#41dc1a015e3d581f1621776be31afb2876a9b1bc"
+    integrity sha512-VCdBRNFTX1fyE7Nb6FYoURo/SPe62QCaAyzJvUjwRaIsc+NePBEniHlvxFmmX56+HZphIGtV0XeCirBtpDrTyQ==
+  
   range-parser@~1.2.1:
     version "1.2.1"
     resolved "https://registry.yarnpkg.com/range-parser/-/range-parser-1.2.1.tgz#3cf37023d199e1c24d1a55b84800c2f3e6468031"
     integrity sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==
+  
+  raw-body@2.4.0:
+    version "2.4.0"
+    resolved "https://registry.yarnpkg.com/raw-body/-/raw-body-2.4.0.tgz#a1ce6fb9c9bc356ca52e89256ab59059e13d0332"
+    integrity sha512-4Oz8DUIwdvoa5qMJelxipzi/iJIi40O5cGV1wNYp5hvZP8ZN0T+jiNkL0QepXs+EsQ9XJ8ipEDoiH70ySUJP3Q==
+    dependencies:
+      bytes "3.1.0"
+      http-errors "1.7.2"
+      iconv-lite "0.4.24"
+      unpipe "1.0.0"
   
   readdirp@~3.2.0:
     version "3.2.0"
@@ -287,6 +433,16 @@ Lockfile:
     integrity sha512-crk4Qu3pmXwgxdSgGhgA/eXiJAPQiX4GMOZZMXnqKxHX7TaoL+3gQVo/WeuAiogr07DpnfjIMpXXa+PAIvwPGQ==
     dependencies:
       picomatch "^2.0.4"
+  
+  safe-buffer@5.1.2:
+    version "5.1.2"
+    resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.1.2.tgz#991ec69d296e0313747d59bdfd2b745c35f8828d"
+    integrity sha512-Gd2UZBJDkXlY7GbJxfsE8/nvKkUEU1G38c1siN6QP6a9PT9MmHB8GnpscSmMJSoF8LOIrt8ud/wPtojys4G6+g==
+  
+  "safer-buffer@>= 2.1.2 < 3":
+    version "2.1.2"
+    resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
+    integrity sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
   
   send@0.17.1:
     version "0.17.1"
@@ -345,6 +501,24 @@ Lockfile:
     integrity sha512-kr8SKKw94OI+xTGOkfsvwZQ8mWoikZDd2n8XZHjJVZUARZT+4/VV6cacRS6CLsH9bNm+HFIPU1Zx4CnNnb4qlQ==
     dependencies:
       matchit "^1.0.0"
+  
+  type-is@~1.6.17:
+    version "1.6.18"
+    resolved "https://registry.yarnpkg.com/type-is/-/type-is-1.6.18.tgz#4e552cd05df09467dcbc4ef739de89f2cf37c131"
+    integrity sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g==
+    dependencies:
+      media-typer "0.3.0"
+      mime-types "~2.1.24"
+  
+  unpipe@1.0.0:
+    version "1.0.0"
+    resolved "https://registry.yarnpkg.com/unpipe/-/unpipe-1.0.0.tgz#b2bf4ee8514aae6165b4817829d21b2ef49904ec"
+    integrity sha1-sr9O6FFKrmFltIF4KdIbLvSZBOw=
+  
+  vary@^1, vary@~1.1.2:
+    version "1.1.2"
+    resolved "https://registry.yarnpkg.com/vary/-/vary-1.1.2.tgz#2299f02c6ded30d4a5961b0b9f74524a18f634fc"
+    integrity sha1-IpnwLG3tMNSllhsLn3RSShj2NPw=
   
   ws@^7.1.2:
     version "7.2.0"

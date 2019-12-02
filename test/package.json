@@ -1,6 +1,7 @@
 {
     "scripts": {
-        "run": "node ."
+        "run": "node .",
+        "dev": "nodemon ."
     },
     "name": "metaverse_test",
     "version": "1.0.0",
@@ -10,5 +11,8 @@
         "chokidar": "^3.2.2",
         "metaverse-common": "../common/",
         "metaverse-server": "../server"
+    },
+    "devDependencies": {
+        "nodemon": "^2.0.1"
     }
 }
