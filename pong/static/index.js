@@ -1,3 +1,4 @@
+const { THREE, Camera, BaseControls, Controls, scene, url, userName } = this;
 const { Euler, Vector3, Object3D } = THREE;
 
 let scoreFont;

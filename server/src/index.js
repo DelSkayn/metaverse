@@ -2,6 +2,7 @@ const polka = require("polka");
 const assert = require("assert");
 const WebSocket = require("ws");
 const url = require("url");
+const cors = require("cors")();
 const serveStatic = require("serve-static");
 const { Rpc, EventEmitter } = require("metaverse-common");
 const defaultsDeep = require("@nodeutils/defaults-deep");
@@ -75,7 +76,7 @@ class Server extends EventEmitter {
     });
 
     this.server = polka();
-    this.server.use(serve);
+    this.server.use(cors, serve);
   }
 
   async start() {
