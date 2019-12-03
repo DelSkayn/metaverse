@@ -1,6 +1,7 @@
 {
     "scripts": {
-        "run": "node ."
+        "run": "node .",
+        "dev": "nodemon ."
     },
     "name": "metaverse_test",
     "version": "1.0.0",

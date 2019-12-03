@@ -8,6 +8,7 @@
   "dependencies": {
     "@nodeutils/defaults-deep": "^1.1.0",
     "chokidar": "^3.2.2",
+    "cors": "^2.8.5",
     "metaverse-common": "../common/",
     "polka": "^0.5.2",
     "q": "^1.5.1",

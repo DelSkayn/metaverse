@@ -1,0 +1,3 @@
+[submodule "peerjs"]
+	path = peerjs
+	url = https://github.com/DelSkayn/peerjs
