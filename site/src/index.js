@@ -15,11 +15,10 @@ let userName;
 let node;
 
 async function init() {
-  node = new Node();
-
   document.getElementById("intro").hidden = true;
   document.getElementById("intro").style.display = "none";
   userName = document.getElementById("Username").value;
+  node = new Node(userName);
   document.getElementById("metaworld-render").style.display = "block";
   /// the position of client and its rotation
   mainCamera = new Camera();
@@ -30,6 +29,7 @@ async function init() {
 
   renderer = new Renderer();
   window.renderer = renderer;
+  renderer.scene.add(node.root);
 
   baseControls.on("trigger:render_chunks", () => {
     renderer.renderChunks = !renderer.renderChunks;
@@ -66,9 +66,9 @@ async function init() {
 
     node.tick(mainCamera.position);
 
-    if (shouldRender) {
-      servers.render(renderer);
-    }
+    //if (shouldRender) {
+    servers.render(renderer);
+    //}
     // Render the scene
     requestAnimationFrame(mainLoop);
   }

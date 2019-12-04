@@ -36,13 +36,15 @@ class Servers {
             if (x.server.isWithin(mainCamera.position)) {
               this._current = x;
               await this._current.connect();
+              if (!this._current) {
+                return;
+              }
               this._current.onId(
                 (x => {
                   console.log(x);
                   this._node.addConnection(x);
                 }).bind(this)
               );
-              console.log("HASDHA");
               this._current.sendId(this._node.peer.id);
             }
           })

@@ -231,14 +231,13 @@ class Renderer {
     this.current = this.last_date.getHours() / 24;
     this.current += this.last_date.getMinutes() / (60 * 24);
     let intensity = 1;
-    if (this.current > 0.45 && this.current <= 0.55) {
-      intensity = (0.55 - this.current) * 10;
-    } else if (this.current > 0.55 && this.current < 0.95) {
-      intensity = 0;
-    } else if (this.current >= 0.95) {
+
+    if (this.current > 0.9 && this.current <= 1) {
       intensity = (1 - this.current) * 10;
-    } else if (this.current < 0.05) {
-      intensity = (0.05 + this.current) * 10;
+    } else if (this.current > 1) {
+      intensity = 0;
+    } else if (this.current < 0.1) {
+      intensity = this.current * 10;
     }
 
     this.sunLight.intensity = intensity;
