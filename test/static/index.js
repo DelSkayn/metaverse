@@ -1,5 +1,5 @@
 const { Euler, Vector3 } = this.THREE;
-const { GLTFLoader, THREE, Controls, Camera } = this;
+const { GLTFLoader, THREE, Controls, Camera, scene } = this;
 
 console.log("HALLOWWOWOW");
 console.log(this.scene);
@@ -35,7 +35,20 @@ this.buildControls = function() {
     this.scene.camera.position.addScaledVector(new Vector3(0, 1, 0), 0.1);
   });
   controls.on("action:down", () => {
-    this.scene.camera.position.addScaledVector(new Vector3(0, -1, 0), 0.1);
+    scene.camera.position.addScaledVector(new Vector3(0, -1, 0), 0.1);
+  });
+  controls.on("mousemove", x => {
+    let euler = new Euler(0, 0, 0, "YXZ");
+    euler.setFromQuaternion(scene.camera.rotation);
+    euler.y -= x.x * 0.004;
+    euler.x -= x.y * 0.004;
+    if (euler.x > Math.PI * 0.5) {
+      euler.x = Math.PI * 0.5;
+    }
+    if (euler.x < Math.PI * -0.5) {
+      euler.x = Math.PI * -0.5;
+    }
+    scene.camera.rotation.setFromEuler(euler);
   });
   controls.on(
     "mousemove",
@@ -57,26 +70,21 @@ this.buildControls = function() {
 };
 (async () => {
   const controls = this.buildControls();
-  this.scene.bind(controls);
-
-  console.log(this.scene);
-
+  scene.bind(controls);
+  console.log(scene);
   const chunks = [
     { x: 0, y: 0, z: 0 },
     { x: 1, y: 0, z: 0 },
     { x: 0, y: 1, z: 0 },
     { x: 1, y: 1, z: 0 }
   ];
-
-  this.scene.camera = new Camera();
-
-  this.scene.on("connect", async rpc => {
+  scene.camera = new Camera();
+  scene.on("connect", async rpc => {
     console.log("recieved connection to server!");
     await rpc.remote.log("Hallo from the client!");
     await rpc.remote.log("Hallo from the client again!");
   });
-
-  this.scene.on("disconnect", () => {
+  scene.on("disconnect", () => {
     console.log("connection to server lost");
   });
 

@@ -146,5 +146,3 @@ async function init() {
 }
 
 window.init = init;
-
-//document.addEventListener("DOMContentLoaded", init);
