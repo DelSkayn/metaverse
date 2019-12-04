@@ -19,6 +19,7 @@ async function init() {
   document.getElementById("intro").style.display = "none";
   userName = document.getElementById("Username").value;
   node = new Node(userName);
+  window.node = node;
   document.getElementById("metaworld-render").style.display = "block";
   /// the position of client and its rotation
   mainCamera = new Camera();
