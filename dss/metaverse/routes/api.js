@@ -208,18 +208,23 @@ router.get("/", function(req, res) {
     console.log(servers);
     var topServers = [];
     let serverSet = new Set();
-    for (let server = 0; server < servers.length; server++) {
-      if (serverSet.has(servers[server].ID)) continue;
-      topServers.push(servers[server]);
+    for (let i = 0; i < servers.length; i++) {
+      if (serverSet.has(servers[i].ID)) continue;
+      topServers.push(servers[i]);
       console.log(topServers);
-      serverSet.add(servers[server].ID);
+      serverSet.add(servers[i].ID);
       console.log(serverSet);
-      if (topServers.length >= top) break;
+      if (topServers.length >= top + 1) break;
+    }
+    let lastDist = null;
+    if (topServers.length == top + 1) {
+      lastDist = topServers.pop().distance;
     }
 
     topServers = topServers.map(server => {
-      return { locations: [], ID: server.ID };
+      return { locations: [], ID: server.ID, distance: server.distance };
     });
+
     oriservers.forEach(server => {
       topServers.forEach(topserver => {
         if (topserver.ID == server.serverID)
@@ -229,7 +234,8 @@ router.get("/", function(req, res) {
 
     res.json({
       result: "ok",
-      servers: topServers
+      servers: topServers,
+      nextDist: lastDist
     });
   });
 });
