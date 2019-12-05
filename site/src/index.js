@@ -12,6 +12,33 @@ let userName;
 let node;
 
 async function init() {
+  const elem = document.getElementById("Username");
+  if (elem.value.replace(/ /g, "") == "") {
+    const message = document.getElementById("UsernameMessage");
+    const fontSize = window
+      .getComputedStyle(message, null)
+      .getPropertyValue("font-size");
+    let fontSizeNum = parseFloat(fontSize);
+    if (fontSizeNum > 40) {
+      message.style.color = "red";
+    }
+    if (fontSizeNum > 50) {
+      message.innerHTML = "ENTER USERNAME!!";
+    }
+    if (fontSizeNum > 60) {
+      fontSizeNum = 250;
+      document.body.style.backgroundColor = "red";
+      message.style.color = "#FFFFFF";
+      message.style.textAlign = "center";
+      message.style.fontWeight = 900;
+      message.innerHTML = "ENTER NAME";
+      message.style.position = "absolute";
+      message.style.zIndex = -1;
+    }
+    message.style.fontSize = fontSizeNum + 1 + "px";
+    console.log(fontSize);
+    return;
+  }
   document.getElementById("intro").hidden = true;
   document.getElementById("intro").style.display = "none";
   userName = document.getElementById("Username").value;
