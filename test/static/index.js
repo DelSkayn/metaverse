@@ -69,6 +69,7 @@ this.buildControls = function() {
   return controls;
 };
 (async () => {
+  this.scene.root = new THREE.Object3D();
   const controls = this.buildControls();
   scene.bind(controls);
   console.log(scene);
@@ -93,7 +94,6 @@ this.buildControls = function() {
   });
 
   var loader = new GLTFLoader();
-
   loader.load("http://" + this.url + "/res/sponza/Sponza.glb", gltf => {
     const tmp = gltf.scene.children[0];
     tmp.castShadow = true;
@@ -105,14 +105,14 @@ this.buildControls = function() {
     }
     gltf.scene.receiveShadow = true;
     gltf.scene.castShadow = true;
-    this.scene.root = gltf.scene;
-    this.scene.root.position.set(0, 0.01, -3);
+    this.scene.root.add(gltf.scene);
     console.log(gltf);
     loader.load("http://" + this.url + "/res/DamagedHelmet.gltf", gltf => {
       console.log(gltf);
       gltf.scene.children[0].receiveShadow = true;
       gltf.scene.position.setY(3);
-      gltf.scene.position.setX(30);
+      gltf.scene.position.setX(6);
+      gltf.scene.position.setZ(6);
       this.scene.root.add(gltf.scene);
     });
   });

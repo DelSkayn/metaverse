@@ -8,6 +8,13 @@ class ControlsContext extends EventEmitter {
     super();
     this.isLocked = false;
     this.servers = servers;
+    this.isMobile = window.DeviceOrientationEvent && "ontouchstart" in window;
+    if (this.isMobile) {
+      console.log("MOBILE");
+      document.addEventListener("deviceorientation", console.log);
+    } else {
+      console.log("DESKTOP");
+    }
 
     document.addEventListener(
       "pointerlockchange",

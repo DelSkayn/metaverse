@@ -27,6 +27,7 @@ async function init() {
   // the render engine
   const baseControls = new BaseControls(null, mainCamera);
   baseControls.trigger("KeyC", "render_chunks", true);
+  baseControls.trigger("KeyH", "show_all", true);
 
   renderer = new Renderer();
   window.renderer = renderer;
@@ -35,10 +36,14 @@ async function init() {
   baseControls.on("trigger:render_chunks", () => {
     renderer.renderChunks = !renderer.renderChunks;
   });
+
   /// context for handleing controls
   const controlsContext = new ControlsContext(baseControls, renderer);
   /// all the servers
   servers = new Servers(controlsContext, userName, node);
+  baseControls.on("trigger:show_all", () => {
+    servers.showAll = !servers.showAll;
+  });
   /// I hate myself
   controlsContext.servers = servers;
 
@@ -123,6 +128,11 @@ async function init() {
   /// Setup control grabber
   const grabber = document.getElementById("grabber");
   grabber.addEventListener("click", () => {
+    console.log("CALLED");
+    controlsContext.lock();
+  });
+  grabber.addEventListener("touch", () => {
+    console.log("CALLED");
     controlsContext.lock();
   });
 

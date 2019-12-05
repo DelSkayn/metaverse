@@ -38,6 +38,37 @@ class ServerData {
   constructor(addr, chunks) {
     this.addr = addr;
     this.chunks = chunks;
+    this.chunkNeighbours = this.chunks.map(a => {
+      let neighbours = {
+        up: false,
+        down: false,
+        right: false,
+        left: false,
+        forward: false,
+        backward: false
+      };
+      chunks.forEach(b => {
+        if (a.x == b.x + 1) {
+          neighbours.right = true;
+        }
+        if (a.x == b.x - 1) {
+          neighbours.left = true;
+        }
+        if (a.y == b.y + 1) {
+          neighbours.up = true;
+        }
+        if (a.y == b.y - 1) {
+          neighbours.down = true;
+        }
+        if (a.z == b.z + 1) {
+          neighbours.forward = true;
+        }
+        if (a.z == b.z - 1) {
+          neighbours.backward = true;
+        }
+      });
+      return neighbours;
+    });
   }
 
   isWithin(postion) {
@@ -55,6 +86,49 @@ class ServerData {
       }
     }
     return false;
+  }
+
+  boxWithin(box) {
+    for (let i = 0; i < this.chunks.length; i++) {
+      const chunk = this.chunks[i];
+      const neighbour = this.chunkNeighbours[i];
+
+      if (!neighbour.top) {
+        if (box.max.y > chunk.y + 10) {
+          return false;
+        }
+      }
+
+      if (!neighbour.bottom) {
+        if (box.min.y < chunk.y) {
+          return false;
+        }
+      }
+
+      if (!neighbour.right) {
+        if (box.max.x > chunk.x + 10) {
+          return false;
+        }
+      }
+
+      if (!neighbour.left) {
+        if (box.min.x < chunk.x) {
+          return false;
+        }
+      }
+
+      if (!neighbour.forward) {
+        if (box.max.z > chunk.z + 10) {
+          return false;
+        }
+      }
+
+      if (!neighbour.backward) {
+        if (box.min.z < chunk.z) {
+          return false;
+        }
+      }
+    }
   }
 }
 

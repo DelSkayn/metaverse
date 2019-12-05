@@ -13,6 +13,7 @@ class Servers {
     this._shouldConnect = null;
     this._username = userName;
     this._node = node;
+    this.showAll = false;
   }
 
   async load(mainCamera) {
@@ -85,6 +86,8 @@ class Servers {
         }
         this._current.connect().then(
           (() => {
+            if (!this._current) {
+            }
             this._current.onId(
               (x => {
                 console.log(x);
@@ -115,6 +118,12 @@ class Servers {
   render(renderer) {
     for (let i = 0; i < this.all.length; i++) {
       if (this.all[i].scene && this.all[i].scene.root) {
+        const scene = this.all[i].scene.root;
+        if (!this.showAll) {
+          this._checkSceneValid(scene, this.all[i].server);
+        } else {
+          scene.traverse(x => (x.visible = true));
+        }
         renderer.roots.add(this.all[i].scene.root);
       }
     }
@@ -124,6 +133,19 @@ class Servers {
         renderer.roots.remove(this.all[i].scene.root);
       }
     }
+  }
+
+  _checkSceneValid(scene, serverData) {
+    scene.traverse(obj => {
+      if (obj.isMesh) {
+        if (!obj.geometry.boundingBox) {
+          obj.geometry.computeBoundingBox();
+        }
+        const box = obj.geometry.boundingBox.clone();
+        box.applyMatrix4(obj.matrixWorld);
+        obj.visible = serverData.boxWithin(box);
+      }
+    });
   }
 
   release() {

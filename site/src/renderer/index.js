@@ -136,9 +136,12 @@ class Renderer {
     position.y = distance * Math.sin(phi) * Math.sin(theta);
     position.z = distance * Math.sin(phi) * Math.cos(theta);
 
+    this.character = new THREE.Object3D();
+
     this.sunLight.position.copy(position);
     this.sunLight.position.normalize();
     this.sunLight.position.multiplyScalar(50);
+    this.sunLight.target = this.character;
     uniforms["sunPosition"].value.copy(position);
     this.devTexture = new THREE.TextureLoader().load(DevTexture);
     this.ground = buildGround(this.devTexture);
@@ -148,15 +151,13 @@ class Renderer {
     this.chunkObject = null;
     this._renderChunks = false;
 
-    this.character = new THREE.Object3D();
-    this.character.add(this.sunLight);
-
     // Add things to a scene
     this.scene.add(this.hemisphereLight);
     this.scene.add(this.sky);
     this.scene.add(this.ground);
     this.scene.add(this.roots);
     this.scene.add(this.character);
+    this.character.add(this.sunLight);
 
     this.last_date = new Date(0);
     this._updateSun();
@@ -195,7 +196,8 @@ class Renderer {
     ground_pos.round();
     ground_pos.setY(0);
     this.ground.position.copy(ground_pos);
-    //this.character.position.copy(this.camera.position);
+
+    this.character.position.copy(this.camera.position);
 
     this.renderer.render(this.scene, this.camera);
   }
