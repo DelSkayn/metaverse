@@ -8,7 +8,15 @@ class Servers {
   constructor(controlsContext, userName, node) {
     this.controlsContext = controlsContext;
     this._currentChunk = new Vector3();
+    /// All known servers
+    this._servers = {};
+    /// The current connections
     this._connections = [];
+
+    this._serversByDistance = [];
+
+    this._lastLoadPosition = null;
+
     this._current = null;
     this._shouldConnect = null;
     this._username = userName;
@@ -17,43 +25,67 @@ class Servers {
   }
 
   async load(mainCamera) {
-    this.servers = await getServers(mainCamera.position);
+    this._lastLoadPosition = this.calcChunkPos(mainCamera.position);
+    const servers = await getServers(this._lastLoadPosition);
 
-    this.servers.forEach(x => {
-      this._connections.push(
-        new ServerConnection(x, this.controlsContext, this._username)
-      );
+    servers.forEach(x => {
+      if (this._servers[x.addr]) {
+        this._servers[x.addr].chunks = x.chunks;
+        this._servers[x.addr].distance = x.distance;
+      } else {
+        this._serversByDistance.push(x);
+        this._servers[x.addr] = x;
+      }
+    });
+
+    this._serversByDistance.sort((a, b) => {
+      if (a.distance < b.distance) {
+        return 1;
+      }
+      if (a.distance > b.distance) {
+        return -1;
+      }
+      return 0;
     });
 
     let promises = [];
-    // Load initial script
-    this._connections.forEach(x => {
-      promises.push(
-        x
-          .load()
-          .then(async () => {
-            // If this server is the one the client is in
-            // connect to the server;
-            if (x.server.isWithin(mainCamera.position)) {
-              this._current = x;
-              await this._current.connect();
-              if (!this._current) {
-                return;
-              }
-              this._current.onId(
-                (x => {
-                  console.log(x);
-                  this._node.addConnection(x);
-                }).bind(this)
-              );
-              this._current.sendId(this._node.peer.id);
-            }
-          })
-          .catch(e => {
-            console.error("error loading '" + x.server.addr + "':  " + e);
-          })
+    for (let i = 0; i < 4 && i < this._serversByDistance.length; i++) {
+      const server = this._serversByDistance[i];
+      console.log(server);
+      if (server.connection) {
+        continue;
+      }
+      let conn = new ServerConnection(
+        server,
+        this.controlsContext,
+        this._username
       );
-    });
+      const prom = conn
+        .load()
+        .then(async () => {
+          server.connection = conn;
+          // If this server is the one the client is in
+          // connect to the server;
+          if (server.isWithin(mainCamera.position)) {
+            this._current = conn;
+            await this._current.connect();
+            if (!this._current) {
+              return;
+            }
+            this._current.onId(
+              (x => {
+                console.log(x);
+                this._node.addConnection(x);
+              }).bind(this)
+            );
+            this._current.sendId(this._node.peer.id);
+          }
+        })
+        .catch(e => {
+          console.warn("error loading server " + server.addr + " error: " + e);
+        });
+      promises.push(prom);
+    }
     await Q.all(promises);
   }
 
@@ -78,15 +110,19 @@ class Servers {
       this._current.disconnect();
     }
     this._current = null;
-    this._connections.forEach(x => {
-      if (x.server.isWithin(this._currentChunk)) {
-        this._current = x;
+    this._serversByDistance.forEach(x => {
+      if (x.isWithin(this._currentChunk)) {
+        if (!x.connection) {
+          return;
+        }
+        this._current = x.connection;
         if (this._current.scene && this._current.scene.camera) {
           this._current.scene.camera.copy(mainCamera);
         }
         this._current.connect().then(
           (() => {
             if (!this._current) {
+              return;
             }
             this._current.onId(
               (x => {
@@ -120,6 +156,9 @@ class Servers {
       if (this.all[i].scene && this.all[i].scene.root) {
         const scene = this.all[i].scene.root;
         if (!this.showAll) {
+          if (window.printBox) {
+            console.log(scene);
+          }
           this._checkSceneValid(scene, this.all[i].server);
         } else {
           scene.traverse(x => (x.visible = true));
@@ -133,6 +172,7 @@ class Servers {
         renderer.roots.remove(this.all[i].scene.root);
       }
     }
+    window.printBox = false;
   }
 
   _checkSceneValid(scene, serverData) {
@@ -143,6 +183,9 @@ class Servers {
         }
         const box = obj.geometry.boundingBox.clone();
         box.applyMatrix4(obj.matrixWorld);
+        if (window.printBox) {
+          console.log(box);
+        }
         obj.visible = serverData.boxWithin(box);
       }
     });
@@ -166,7 +209,9 @@ class Servers {
   }
 
   get all() {
-    return this._connections;
+    return this._serversByDistance
+      .filter(x => x.connection)
+      .map(x => x.connection);
   }
 }
 

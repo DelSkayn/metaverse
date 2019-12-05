@@ -1,5 +1,5 @@
 const Q = require("q");
-const { Vector3 } = require("three");
+const { Vector3, Box3 } = require("three");
 
 async function getServers(pos) {
   let url = "http://metaworld.duckdns.org:3000/api?";
@@ -25,7 +25,11 @@ async function getServers(pos) {
   let result = [];
   data.servers.forEach(x => {
     result.push(
-      new ServerData(x.ID, x.locations.map(x => new Vector3(x[0], x[1], x[2])))
+      new ServerData(
+        x.ID,
+        x.locations.map(x => new Vector3(x[0], x[1], x[2])),
+        x.distance
+      )
     );
   });
 
@@ -35,7 +39,8 @@ async function getServers(pos) {
 }
 
 class ServerData {
-  constructor(addr, chunks) {
+  constructor(addr, chunks, distance) {
+    this.distance = distance;
     this.addr = addr;
     this.chunks = chunks;
     this.chunkNeighbours = this.chunks.map(a => {
@@ -48,27 +53,32 @@ class ServerData {
         backward: false
       };
       chunks.forEach(b => {
-        if (a.x == b.x + 1) {
+        if (a.x + 1 == b.x) {
           neighbours.right = true;
         }
-        if (a.x == b.x - 1) {
+        if (a.x - 1 == b.x) {
           neighbours.left = true;
         }
-        if (a.y == b.y + 1) {
+        if (a.y + 1 == b.y) {
           neighbours.up = true;
         }
-        if (a.y == b.y - 1) {
+        if (a.y - 1 == b.y) {
           neighbours.down = true;
         }
-        if (a.z == b.z + 1) {
+        if (a.z - 1 == b.z) {
           neighbours.forward = true;
         }
-        if (a.z == b.z - 1) {
+        if (a.z + 1 == b.z) {
           neighbours.backward = true;
         }
       });
       return neighbours;
     });
+  }
+
+  copy(other) {
+    this.chunks = other.chunks;
+    this.neighbours;
   }
 
   isWithin(postion) {
@@ -89,46 +99,100 @@ class ServerData {
   }
 
   boxWithin(box) {
+    let intersects = false;
+    if (window.printBox) {
+      console.log(this);
+    }
     for (let i = 0; i < this.chunks.length; i++) {
       const chunk = this.chunks[i];
       const neighbour = this.chunkNeighbours[i];
 
-      if (!neighbour.top) {
-        if (box.max.y > chunk.y + 10) {
+      const min = chunk.clone();
+      min.multiplyScalar(10);
+      const max = min.clone();
+      max.addScalar(10);
+      const bb = new Box3(min, max);
+      if (bb.containsBox(box)) {
+        if (window.printBox) {
+          console.log("contained");
+        }
+        return true;
+      }
+      if (!bb.intersectsBox(box)) {
+        if (window.printBox) {
+          console.log("no intersection");
+        }
+        continue;
+      }
+      intersects = true;
+
+      if (!neighbour.up) {
+        if (box.max.y > bb.max.y) {
+          if (window.printBox) {
+            console.log("max y");
+            console.log(box);
+            console.log(bb);
+          }
           return false;
         }
       }
 
-      if (!neighbour.bottom) {
-        if (box.min.y < chunk.y) {
+      if (!neighbour.down) {
+        if (box.min.y < bb.min.y) {
+          if (window.printBox) {
+            console.log("min y");
+            console.log(box);
+            console.log(bb);
+          }
           return false;
         }
       }
 
       if (!neighbour.right) {
-        if (box.max.x > chunk.x + 10) {
+        if (box.max.x > bb.max.x) {
+          if (window.printBox) {
+            console.log("max x");
+            console.log(box);
+            console.log(bb);
+          }
           return false;
         }
       }
 
       if (!neighbour.left) {
-        if (box.min.x < chunk.x) {
+        if (box.min.x < bb.min.x) {
+          if (window.printBox) {
+            console.log("min x");
+            console.log(box);
+            console.log(bb);
+          }
           return false;
         }
       }
 
       if (!neighbour.forward) {
-        if (box.max.z > chunk.z + 10) {
+        if (box.min.z < bb.min.z) {
+          if (window.printBox) {
+            console.log("max z");
+            console.log(box);
+            console.log(bb);
+          }
           return false;
         }
       }
 
       if (!neighbour.backward) {
-        if (box.min.z < chunk.z) {
+        if (box.max.z > bb.max.z) {
+          if (window.printBox) {
+            console.log("min z");
+            console.log(box);
+            console.log(bb);
+          }
           return false;
         }
       }
     }
+    return intersects;
   }
 }
 

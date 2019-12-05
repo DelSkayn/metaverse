@@ -204,7 +204,7 @@ class Renderer {
 
   updateChunks(servers) {
     if (this.chunkObject && this._renderChunks) {
-      scene.remove(this.chunkObject);
+      this.scene.remove(this.chunkObject);
     }
     this.chunksCache = servers;
     this.chunkObject = new THREE.Object3D();

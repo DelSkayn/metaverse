@@ -59,7 +59,7 @@ async function init() {
     baseControls.trigger("KeyL", "claim", true);
   }
 
-  baseControls.on("trigger:claim", () => {
+  baseControls.on("trigger:claim", async () => {
     let chunk = mainCamera.position.clone();
     chunk.multiplyScalar(0.1);
     chunk.floor();
@@ -67,7 +67,9 @@ async function init() {
     if (!id) {
       return;
     }
-    claimServer(id, chunk.toArray());
+    await claimServer(id, chunk.toArray());
+    await servers.load(mainCamera);
+    renderer.updateChunks(servers._serversByDistance);
   });
 
   renderer = new Renderer();
@@ -82,6 +84,7 @@ async function init() {
   const controlsContext = new ControlsContext(baseControls, renderer);
   /// all the servers
   servers = new Servers(controlsContext, userName, node);
+  window.servers = servers;
   baseControls.on("trigger:show_all", () => {
     servers.showAll = !servers.showAll;
   });
@@ -196,7 +199,7 @@ async function init() {
   startFpsUi();
 
   await serversPromise;
-  renderer.updateChunks(servers.servers);
+  renderer.updateChunks(servers._serversByDistance);
   /// start running.
   mainLoop();
   shouldRender = false;
