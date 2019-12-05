@@ -4,6 +4,7 @@ const { ControlsContext, BaseControls } = require("./controls");
 const { Servers } = require("./servers");
 const { Camera } = require("./camera");
 const { Node } = require("./conn/node");
+const { claimServer } = require("./conn/claim");
 
 let renderer;
 let servers;
@@ -39,7 +40,6 @@ async function init() {
       message.style.zIndex = -1;
     }
     message.style.fontSize = fontSizeNum + 1 + "px";
-    console.log(fontSize);
     return;
   }
   document.getElementById("intro").hidden = true;
@@ -55,6 +55,20 @@ async function init() {
   const baseControls = new BaseControls(null, mainCamera);
   baseControls.trigger("KeyC", "render_chunks", true);
   baseControls.trigger("KeyH", "show_all", true);
+  if (userName == "mees" || userName == "sophie") {
+    baseControls.trigger("KeyL", "claim", true);
+  }
+
+  baseControls.on("trigger:claim", () => {
+    let chunk = mainCamera.position.clone();
+    chunk.multiplyScalar(0.1);
+    chunk.floor();
+    let id = prompt("Server id:");
+    if (!id) {
+      return;
+    }
+    claimServer(id, chunk.toArray());
+  });
 
   renderer = new Renderer();
   window.renderer = renderer;
@@ -162,11 +176,9 @@ async function init() {
   /// Setup control grabber
   const grabber = document.getElementById("grabber");
   grabber.addEventListener("click", () => {
-    console.log("CALLED");
     controlsContext.lock();
   });
   grabber.addEventListener("touch", () => {
-    console.log("CALLED");
     controlsContext.lock();
   });
 
@@ -189,5 +201,4 @@ async function init() {
   mainLoop();
   shouldRender = false;
 }
-
 window.init = init;

@@ -8,13 +8,6 @@ class ControlsContext extends EventEmitter {
     super();
     this.isLocked = false;
     this.servers = servers;
-    this.isMobile = window.DeviceOrientationEvent && "ontouchstart" in window;
-    if (this.isMobile) {
-      console.log("MOBILE");
-      document.addEventListener("deviceorientation", console.log);
-    } else {
-      console.log("DESKTOP");
-    }
 
     document.addEventListener(
       "pointerlockchange",
@@ -211,7 +204,6 @@ class Controls extends EventEmitter {
   // Handle a key press. If no action is bound return false
   // else return true
   _handlePressed(keycode) {
-    console.log(keycode);
     let res = false;
     if (this.bindings.actions[keycode]) {
       const name = this.bindings.actions[keycode];
