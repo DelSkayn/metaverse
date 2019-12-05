@@ -2,7 +2,7 @@ const Q = require("q");
 const { Vector3 } = require("three");
 
 async function getServers(pos) {
-  let url = "http://192.168.0.156:3000/api?";
+  let url = "http://metaworld.duckdns.org:3000/api?";
   url += "x=" + pos.x;
   url += "&y=" + pos.y;
   url += "&z=" + pos.z;
