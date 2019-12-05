@@ -19,11 +19,8 @@ class Connection extends EventEmitter {
       if (msg.slice(0, 4) == "rpc:") {
         this.emit("message", msg.slice(4));
       } else {
-        console.log(this.server.clients);
         this.server.clients.forEach(x => {
-          console.log("SEND");
           if (x.readyState === ws.OPEN && x !== this.conn) {
-            console.log("SEND!!");
             x.send(msg);
           }
         });

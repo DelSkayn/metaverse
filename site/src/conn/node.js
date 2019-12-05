@@ -43,7 +43,6 @@ class Node extends EventEmitter {
         });
       });
       conn.on("close", () => {
-        console.log("DISCONNECTED!!!!!!!!!");
         this.root.remove(connData.object);
         _.remove(this.connections, x => x == connData);
       });
@@ -64,7 +63,6 @@ class Node extends EventEmitter {
     ctx.fillText(name, 0, 80);
     ctx.strokeText(name, 0, 80);
     const text = new THREE.CanvasTexture(this.nameCanvas);
-    console.log(text.transformUv(new THREE.Vector2(0.5, 0.5)));
     const geom = new THREE.PlaneGeometry(1, 1);
     const mat = new THREE.SpriteMaterial({ map: text, color: 0xffffff });
     //const mat = new THREE.MeshBasicMaterial({ map: text, color: 0xffffff });
@@ -79,7 +77,6 @@ class Node extends EventEmitter {
   }
 
   _handleConnectionData(data, connData) {
-    console.log(data);
     if (data.type === "position") {
       connData.position = new Vector3(
         data.position.x,
@@ -118,7 +115,6 @@ class Node extends EventEmitter {
       });
     });
     conn.on("close", () => {
-      console.log("DISCONNECTED!!!!!!!!!");
       this.root.remove(connData.object);
       _.remove(this.connections, x => x == connData);
     });

@@ -1,4 +1,5 @@
 const Q = require("q");
+const { EventEmitter } = require("./event");
 // Utilities dealing with server connection
 
 // Types of messages that can be send
@@ -33,8 +34,9 @@ class RpcConnectionError extends Error {
   }
 }
 
-class Rpc {
+class Rpc extends EventEmitter {
   constructor(connection) {
+    super();
     this.connection = connection;
     /// The number for the next call
     this.count = 0;
@@ -56,6 +58,7 @@ class Rpc {
         this.pending[v].reject(new RpcConnectionError());
         delete this.pending[v];
       }
+      this.emit("close");
     });
 
     this.connection.on("message", msg => {

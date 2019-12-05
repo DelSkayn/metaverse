@@ -27,11 +27,29 @@ async function updateHighScores(rpc) {
   root.add(textObject);
 }
 
+let currentlyPlaying = false;
+
+expo = {
+  updateHighScores(scores) {
+    if (currentlyPlaying) {
+      return;
+    }
+    root.remove(textObject);
+    if (!scores) {
+      scores = [];
+    }
+    let text = "High scores:\n";
+    scores.forEach(x => {
+      text += x.name + ": " + x.score + "\n";
+    });
+    textObject = getTextObject(text, scoreFont);
+    root.add(textObject);
+  }
+};
+
 root.position.setZ(50);
 root.position.setY(20);
 root.position.setX(50);
-
-let currentlyPlaying = false;
 
 let camera = new Camera();
 scene.camera = camera;
