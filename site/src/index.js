@@ -28,7 +28,10 @@ async function init() {
     if (fontSizeNum > 60) {
       fontSizeNum = 250;
       document.body.style.backgroundColor = "red";
+      document.getElementById("Header").style.display = "none";
+      document.getElementById("Username").style.marginTop = "255px";
       message.style.color = "#FFFFFF";
+      message.style.marginTop = "0px";
       message.style.textAlign = "center";
       message.style.fontWeight = 900;
       message.innerHTML = "ENTER NAME";
@@ -70,6 +73,13 @@ async function init() {
   });
   /// I hate myself
   controlsContext.servers = servers;
+
+  document.addEventListener("keypress", e => {
+    if (controlsContext.isLocked && e.code == "KeyT") {
+      node.say(prompt("What do you want to say?"));
+    }
+    controlsContext.lock();
+  });
 
   // the base controls, used when no server has bound controls.
 

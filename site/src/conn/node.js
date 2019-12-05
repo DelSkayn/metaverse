@@ -9,7 +9,19 @@ class Node extends EventEmitter {
     super();
     this.userName = userName;
     this.position = new Vector3();
-    this.peer = new peerjs.Peer();
+    this.peer = new peerjs.Peer({
+      debug: 3,
+      config: {
+        iceServers: [
+          { urls: "stun:metaworld.duckdns.org:3002" },
+          {
+            urls: "turn:metaworld.duckdns.org:3002",
+            credential: "pkdick",
+            username: "metaworld"
+          }
+        ]
+      }
+    });
     this.knownClients = new Set();
     this.connections = [];
 
@@ -49,6 +61,15 @@ class Node extends EventEmitter {
     });
   }
 
+  say(text) {
+    this.connections.forEach(conn => {
+      conn.conn.send({
+        type: "say",
+        text
+      });
+    });
+  }
+
   createNameSprite(name) {
     const ctx = this.nameCanvas.getContext("2d");
     ctx.font = "100px Arial";
@@ -68,7 +89,7 @@ class Node extends EventEmitter {
     //const mat = new THREE.MeshBasicMaterial({ map: text, color: 0xffffff });
 
     let scale = new THREE.Vector2(metrics.width, 100);
-    scale.normalize();
+    scale.multiplyScalar(0.005);
     const res = new THREE.Sprite(mat);
     //const res = new THREE.Mesh(geom, mat);
     res.scale.set(scale.x, scale.y, 1);
@@ -88,6 +109,18 @@ class Node extends EventEmitter {
       connData.userName = data.userName;
       connData.object.add(this.createNameSprite(connData.userName));
     }
+
+    if (data.type === "say") {
+      const textObj = this.createNameSprite(data.text);
+      textObj.position.setY(0.7);
+      if (connData.textObj) {
+        connData.object.remove(connData.textObj);
+        connData.textObj.material.map.dispose();
+        connData.textObj.material.dispose();
+      }
+      connData.textObj = textObj;
+      connData.object.add(textObj);
+    }
   }
 
   addConnection(id) {
@@ -96,6 +129,9 @@ class Node extends EventEmitter {
     }
     this.knownClients.add(id);
     const conn = this.peer.connect(id);
+    if (!conn) {
+      return;
+    }
     const object = this.playerObject.clone();
     this.root.add(object);
     const connData = {
