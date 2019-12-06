@@ -107,7 +107,7 @@ async function init() {
   function mainLoop() {
     frames += 1;
     // Run the base controlls bindings.
-    servers.updatePosition(mainCamera);
+    servers.updatePosition(mainCamera, renderer);
     baseControls.tick();
 
     if (mainCamera.position.y < 1) {

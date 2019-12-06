@@ -116,10 +116,12 @@ class Servers {
   }
 
   /// Update which server has the right control
-  updatePosition(mainCamera) {
+  updatePosition(mainCamera, renderer) {
     const pos = this.calcChunkPos(mainCamera.position);
     if (pos.distanceTo(this._lastLoadPosition) > this._checkDistance) {
-      this.load(mainCamera);
+      this.load(mainCamera).then(() => {
+        renderer.updateChunks(this._serversByDistance);
+      });
     }
     if (this._currentChunk.equals(pos)) {
       return;
