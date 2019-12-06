@@ -149,6 +149,9 @@ class ServerConnection {
   }
 
   onId(x) {
+    if (!this.connection) {
+      return;
+    }
     this.connection.on("idMessage", x);
   }
 

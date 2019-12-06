@@ -39,6 +39,7 @@ class Servers {
     servers.forEach(x => {
       if (this._servers[x.addr]) {
         this._servers[x.addr].chunks = x.chunks;
+        this._servers[x.addr].chunkNeighbours = x.chunkNeighbours;
         this._servers[x.addr].distance = x.distance;
       } else {
         this._serversByDistance.push(x);
@@ -104,7 +105,7 @@ class Servers {
         });
       promises.push(prom);
     }
-    await Q.all(promises);
+    //await Q.all(promises);
   }
 
   calcChunkPos(position) {
