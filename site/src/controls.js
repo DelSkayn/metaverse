@@ -68,7 +68,7 @@ class ControlsContext extends EventEmitter {
       return;
     } else {
       // the ESC key zorgt altijd voor een screen unlock
-      if (e.keyCode == 27) {
+      if (e.keyCode == 192) {
         if (this.servers.current) {
           this.servers.release();
         } else {
@@ -97,7 +97,7 @@ class ControlsContext extends EventEmitter {
     } else {
       // the ESC key zorgt altijd voor een screen unlock
       // so key up should not fire since keydown did not.
-      if (e.keyCode == 27) {
+      if (e.keyCode == 192) {
         return;
       }
     }

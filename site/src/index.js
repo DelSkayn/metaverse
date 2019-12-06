@@ -94,8 +94,8 @@ async function init() {
   document.addEventListener("keypress", e => {
     if (controlsContext.isLocked && e.code == "KeyT") {
       node.say(prompt("What do you want to say?"));
+      controlsContext.lock();
     }
-    controlsContext.lock();
   });
 
   // the base controls, used when no server has bound controls.
@@ -179,18 +179,18 @@ async function init() {
   /// Setup control grabber
   const grabber = document.getElementById("grabber");
   grabber.addEventListener("click", () => {
-    controlsContext.lock();
-  });
-  grabber.addEventListener("touch", () => {
+    console.log("CLICK");
     controlsContext.lock();
   });
 
   controlsContext.on("lock", () => {
+    console.log("lock");
     grabber.style.display = "none";
     shouldRender = true;
   });
 
   controlsContext.on("unlock", () => {
+    console.log("unlock");
     grabber.style.display = "";
     shouldRender = false;
   });
