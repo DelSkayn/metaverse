@@ -26,8 +26,16 @@ class Servers {
 
   async load(mainCamera) {
     this._lastLoadPosition = this.calcChunkPos(mainCamera.position);
-    const servers = await getServers(this._lastLoadPosition);
+    const data = await getServers(this._lastLoadPosition);
+    console.log(data);
+    const servers = data.result;
+    const distance = data.distance;
 
+    this._serversByDistance.forEach(x => {
+      x.distance = Infinity;
+    });
+
+    let furthestDistance = 0;
     servers.forEach(x => {
       if (this._servers[x.addr]) {
         this._servers[x.addr].chunks = x.chunks;
@@ -36,17 +44,27 @@ class Servers {
         this._serversByDistance.push(x);
         this._servers[x.addr] = x;
       }
+      if (furthestDistance < this._servers[x.addr].distance) {
+        furthestDistance = this._servers[x.addr].distance;
+      }
     });
+
+    if (distance != null) {
+      this._checkDistance = distance - (furthestDistance + distance) / 2.0;
+    } else {
+      this._checkDistance = Infinity;
+    }
 
     this._serversByDistance.sort((a, b) => {
       if (a.distance < b.distance) {
-        return 1;
+        return -1;
       }
       if (a.distance > b.distance) {
-        return -1;
+        return 1;
       }
       return 0;
     });
+    console.log(this._serversByDistance);
 
     let promises = [];
     for (let i = 0; i < 4 && i < this._serversByDistance.length; i++) {
@@ -99,6 +117,9 @@ class Servers {
   /// Update which server has the right control
   updatePosition(mainCamera) {
     const pos = this.calcChunkPos(mainCamera.position);
+    if (pos.distanceTo(this._lastLoadPosition) > this._checkDistance) {
+      this.load(mainCamera);
+    }
     if (this._currentChunk.equals(pos)) {
       return;
     }
@@ -152,7 +173,7 @@ class Servers {
   }
 
   render(renderer) {
-    for (let i = 0; i < this.all.length; i++) {
+    for (let i = 0; i < this.all.length && i < 3; i++) {
       if (this.all[i].scene && this.all[i].scene.root) {
         const scene = this.all[i].scene.root;
         if (!this.showAll) {

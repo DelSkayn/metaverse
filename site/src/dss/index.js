@@ -33,9 +33,12 @@ async function getServers(pos) {
     );
   });
 
-  console.log(result);
+  console.log(data);
 
-  return result;
+  return {
+    distance: data.nextDist,
+    result
+  };
 }
 
 class ServerData {
