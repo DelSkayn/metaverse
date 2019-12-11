@@ -1,4 +1,4 @@
-metaworld
+METAWORLD
 =========
 
 This is the metaworld repository, a proof of concept open internet like protocol for a collaborative 3D space.
@@ -27,15 +27,15 @@ Each of these components has its own directory:
 building
 --------
 
-The verious components have different build requirements.
+The various components have different build requirements.
 For instructions on building a specific part see the RUNNING.md files in the directories.
 However there are some general instructions for building metaworld.
 
 ### Requirements
 All the metaworld components have the following requirements
 
-    - `nodejs`
-    - `npm`
+- `nodejs`
+- `npm`
 
 Before trying to build any component one should always install the required
 packages by running `npm install` in the directory of the component one is trying to build.
