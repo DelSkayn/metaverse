@@ -6,16 +6,22 @@ The metaworld consists of various components.
 Each of these components has its own directory:
 
  - client
+
 	 Contains the client program used to interact with the metaworld
  - dss
+
 	Contains the Domain Space Server which manages space allocation between servers
  - common
+
 	A Library containing utilities which are used through various components
  - server
+
 	A library for building a metaworld server.
  - pong,test, and letters
+
 	Contain a variety of metaworld servers which where used to test and showcase the implementation.
  - peerjs
+
     Contains a fork of the original peerjs library which was changed to allow it being packaged with browserify
 
 building
