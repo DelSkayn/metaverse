@@ -1,26 +1,39 @@
-const {
-  BackSide,
-  BoxBufferGeometry,
-  Mesh,
-  ShaderMaterial,
-  UniformsUtils,
-  Vector3
-} = require("three");
+// NOTE: This file was taken from the three js example directory,
+// It copied so that we could do some adjustment to fit the file with our build
+// environment. the original file is in the examples/js/objects/sky.js file of the THREE library
+/**
+ * @author zz85 / https://github.com/zz85
+ *
+ * Based on "A Practical Analytic Model for Daylight"
+ * aka The Preetham Model, the de facto standard analytic skydome model
+ * http://www.cs.utah.edu/~shirley/papers/sunsky/sunsky.pdf
+ *
+ * First implemented by Simon Wallner
+ * http://www.simonwallner.at/projects/atmospheric-scattering
+ *
+ * Improved by Martin Upitis
+ * http://blenderartists.org/forum/showthread.php?245954-preethams-sky-impementation-HDR
+ *
+ * Three.js integration by zz85 http://twitter.com/blurspline
+ */
 
-var Sky = function() {
+const THREE = require("three");
+console.log(THREE);
+
+Sky = function() {
   var shader = Sky.SkyShader;
 
-  var material = new ShaderMaterial({
+  var material = new THREE.ShaderMaterial({
     fragmentShader: shader.fragmentShader,
     vertexShader: shader.vertexShader,
-    uniforms: UniformsUtils.clone(shader.uniforms),
-    side: BackSide
+    uniforms: THREE.UniformsUtils.clone(shader.uniforms),
+    side: THREE.BackSide
   });
 
-  Mesh.call(this, new BoxBufferGeometry(1, 1, 1), material);
+  THREE.Mesh.call(this, new THREE.BoxBufferGeometry(1, 1, 1), material);
 };
 
-Sky.prototype = Object.create(Mesh.prototype);
+Sky.prototype = Object.create(THREE.Mesh.prototype);
 
 Sky.SkyShader = {
   uniforms: {
@@ -29,8 +42,8 @@ Sky.SkyShader = {
     rayleigh: { value: 1 },
     mieCoefficient: { value: 0.005 },
     mieDirectionalG: { value: 0.8 },
-    sunPosition: { value: new Vector3() },
-    up: { value: new Vector3(0, 1, 0) }
+    sunPosition: { value: new THREE.Vector3() },
+    up: { value: new THREE.Vector3(0, 1, 0) }
   },
 
   vertexShader: [
@@ -208,6 +221,4 @@ Sky.SkyShader = {
   ].join("\n")
 };
 
-module.exports = {
-  Sky
-};
+module.exports = { Sky };

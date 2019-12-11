@@ -1,14 +1,9 @@
 const { Euler, Vector3 } = this.THREE;
 const { GLTFLoader, THREE, Controls, Camera, scene } = this;
 
-console.log("HALLOWWOWOW");
 console.log(this.scene);
 
 this.buildControls = function() {
-  console.log("HALLOWWOWOW");
-  console.log("HALLOWWOWOW");
-  console.log("HALLOWWOWOW");
-  console.log("HALLOWWOWOW");
   console.log(this);
   let controls = new Controls();
   controls.on("action:left", () => {

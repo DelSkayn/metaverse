@@ -1,8 +1,11 @@
 const Q = require("q");
 const { Vector3, Box3 } = require("three");
+const config = require("../../config.json");
 
 async function getServers(pos) {
-  let url = "http://metaworld.duckdns.org:3000/api?";
+  const dssAdress = config.dssAdress;
+
+  let url = "http://" + dssAdress + "/api?";
   url += "x=" + pos.x;
   url += "&y=" + pos.y;
   url += "&z=" + pos.z;

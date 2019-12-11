@@ -1,11 +1,11 @@
 {
     "scripts": {
-        "run": "node .",
-        "dev": "nodemon ."
+        "run": "node ."
     },
-    "name": "metaverse_test",
+    "name": "metaverse_static",
     "version": "1.0.0",
     "main": "src/index.js",
+    "author": "Mees Delzenne, Sophie Hendrikse",
     "license": "MIT",
     "dependencies": {
         "chokidar": "^3.2.2",

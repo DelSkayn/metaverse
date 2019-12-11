@@ -1,7 +1,9 @@
 {
-  "name": "express-locallibrary-tutorial",
+  "name": "dss",
   "version": "0.0.0",
   "private": true,
+  "license": "MIT",
+  "author": "Mees Delzenne, Sophie Hendrikse",
   "scripts": {
     "start": "node ./bin/www",
     "devstart": "nodemon ./bin/www"

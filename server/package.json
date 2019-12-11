@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "\"Server utilities library for the writing metaverse-servers\"",
   "main": "src/index.js",
-  "author": "Mees Delzenne",
+  "author": "Mees Delzenne, Sophie Hendrikse",
   "license": "MIT",
   "dependencies": {
     "@nodeutils/defaults-deep": "^1.1.0",

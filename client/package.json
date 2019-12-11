@@ -2,22 +2,22 @@
   "name": "client",
   "version": "1.0.0",
   "main": "src/index.js",
-  "author": "Mees Delzenne",
+  "author": "Mees Delzenne, Sophie Hendrikse",
   "license": "MIT",
   "scripts": {
-    "run": "electron .",
-    "package": "browserify src/render/render.js -o dist/render.js"
-  },
-  "dependencies": {
-    "electron": "^7.0.0",
-    "electron-reload": "^1.5.0",
-    "metaverse-common": "../common",
-    "peerjs": "^1.1.0",
-    "three": "^0.110.0",
-    "three-gltf-loader": "^1.110.0"
+    "dev": "budo src/index.js --dir dist --live --open",
+    "build": "browserify -p tinyify src/index.js -o dist/index.js"
   },
   "devDependencies": {
     "browserify": "^16.5.0",
+    "budo": "^11.6.3",
     "tinyify": "^2.5.2"
+  },
+  "dependencies": {
+    "metaverse-common": "../common",
+    "peerjs": "../peerjs",
+    "q": "^1.5.1",
+    "three": "^0.111.0",
+    "three-gltf-loader": "^1.110.0"
   }
 }
