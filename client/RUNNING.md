@@ -14,8 +14,10 @@ After building the client distribution can be found in the dist directory.
 
 Running
 -------
-The client can de running by opening the index.html file in a file browser or by serving the file throug a web server.
+The client can be run by opening the index.html file in a file browser or by serving the file through a web server and connecting to that server with the browser.
 Note that the site requires a Content-Security-Policy of `script-src * 'unsafe-inline' 'unsafe-eval'`, so servers which
 set this value in the headers should be altered to the right CSP.
 
-Offcourse for full functionality of the client one should also run other components.
+Ofcourse for full functionality of the client, one should also run other components of the metaworld.
+
+Altought the client should, in principle, work on every browser, the performance is a lot better on chrome than other browsers.

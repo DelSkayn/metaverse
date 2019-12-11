@@ -1,7 +1,8 @@
 METAWORLD
 =========
 
-This is the metaworld repository, a proof of concept open internet like protocol for a collaborative 3D space.
+This is the metaworld repository, a proof of concept open internet like protocol for a collaborative 3D space build for the LIACS Multi-Media Systems class 2019-2020.
+
 The metaworld consists of various components.
 Each of these components has its own directory:
 
