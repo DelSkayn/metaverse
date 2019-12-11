@@ -40,3 +40,5 @@ All the metaworld components have the following requirements
 
 Before trying to build any component one should always install the required
 packages by running `npm install` in the directory of the component one is trying to build.
+
+NOTE: this repository has a submodule so it should be cloned as following: `git clone --recursive https://github.com/DelSkayn/metaverse.git'
