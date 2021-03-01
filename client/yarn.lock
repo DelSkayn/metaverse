@@ -3384,10 +3384,10 @@ three-gltf-loader@^1.110.0:
   resolved "https://registry.yarnpkg.com/three-gltf-loader/-/three-gltf-loader-1.110.0.tgz#74562fe087f76a9cf5768517295a3b11bac7dd1c"
   integrity sha512-sLIggbrER8iAQwGm4HVzf2R6qIOZBLdpExGf8rIB6e1qJRpT35cEYxlGQsoV9T7wBpcwTF4pK8nbyIMra7ce/Q==
 
-three@^0.111.0:
-  version "0.111.0"
-  resolved "https://registry.yarnpkg.com/three/-/three-0.111.0.tgz#9cedb73e79b7f6bf2440cb67a273f883faa923b6"
-  integrity sha512-AcTqyGJ3H75AIusOuADy0LsP958QKQwm/YhABHFMzd6RFXPNVay1rlSbbG6WYv7KM72G2THMMwqbjQd4dVHMkQ==
+three@^0.125.0:
+  version "0.125.0"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.125.0.tgz#19e922b9dc51ad0b706893aeee888de68e99850a"
+  integrity sha512-qL36qUGsPQ/Ofo/RZdXwHwM7A8wzUSAIyawtjIebJSPvounUQeneSqxI0aBY2iwKpseGy+RUtj3C5f/z4poyXw==
 
 through2@^1.0.0:
   version "1.1.1"
